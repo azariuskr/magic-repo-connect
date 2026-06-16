@@ -67,7 +67,7 @@ function ToolbarBtn({
   label,
   active,
 }: {
-  editor: ReturnType<typeof useEditor>;
+  editor: ReturnType<typeof useEditor> | null;
   action: () => void;
   label: string;
   active?: boolean;
