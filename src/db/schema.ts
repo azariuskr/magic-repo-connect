@@ -62,6 +62,25 @@ export const verification = pgTable("verification", {
 
 // ---- App tables ----
 
+export type PuckData = {
+  content: Array<{ type: string; props: Record<string, unknown> }>;
+  root: { props: Record<string, unknown> };
+  zones?: Record<string, unknown>;
+};
+
+export type SiteThemeJson = {
+  preset?: string;
+  tokens: {
+    bg: string;
+    surface: string;
+    brand: string;
+    fg: string;
+    muted: string;
+    radius: string;
+    font: string;
+  };
+};
+
 export const sites = pgTable("sites", {
   id: uuid("id").primaryKey().defaultRandom(),
   ownerId: text("owner_id")
@@ -69,9 +88,9 @@ export const sites = pgTable("sites", {
     .references(() => user.id, { onDelete: "cascade" }),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
-  theme: jsonb("theme").notNull().default(sql`'{}'::jsonb`),
-  data: jsonb("data").notNull().default(sql`'{}'::jsonb`),
-  publishedData: jsonb("published_data"),
+  theme: jsonb("theme").$type<SiteThemeJson>().notNull().default(sql`'{}'::jsonb`),
+  data: jsonb("data").$type<PuckData>().notNull().default(sql`'{}'::jsonb`),
+  publishedData: jsonb("published_data").$type<PuckData | null>(),
   publishedAt: timestamp("published_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
