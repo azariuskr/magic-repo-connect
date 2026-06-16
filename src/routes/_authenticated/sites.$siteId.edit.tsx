@@ -9,8 +9,12 @@ import { buildPuckConfig } from "@/lib/blocks";
 import { DEFAULT_THEME, PRESETS, type SiteTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/edit")({
+  head: () => ({
+    links: [{ rel: "stylesheet", href: puckCss }],
+  }),
   component: EditSite,
 });
+
 
 function EditSite() {
   const { siteId } = Route.useParams();
