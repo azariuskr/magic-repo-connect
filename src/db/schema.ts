@@ -63,9 +63,9 @@ export const verification = pgTable("verification", {
 // ---- App tables ----
 
 export type PuckData = {
-  content: Array<{ type: string; props: Record<string, unknown> }>;
-  root: { props: Record<string, unknown> };
-  zones?: Record<string, unknown>;
+  content: Array<{ type: string; props: Record<string, any> }>;
+  root: { props: Record<string, any> };
+  zones?: Record<string, any>;
 };
 
 export type SiteThemeJson = {
