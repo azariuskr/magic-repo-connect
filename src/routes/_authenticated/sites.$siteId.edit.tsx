@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Puck, type Data } from "@measured/puck";
-import "@measured/puck/puck.css";
+import puckCss from "@measured/puck/puck.css?url";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getSite, saveSite, publishSite } from "@/lib/sites.functions";
 import { buildPuckConfig } from "@/lib/blocks";
