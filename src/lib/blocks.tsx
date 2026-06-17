@@ -649,6 +649,7 @@ export function buildPuckConfig(siteId?: string): Config<PuckProps> {
         },
         defaultProps: { title: "Find us", address: "1 Infinite Loop, Cupertino, CA" },
         render: MapBlock,
+      },
       Footer: {
         label: "Footer",
         fields: {
@@ -671,7 +672,6 @@ export function buildPuckConfig(siteId?: string): Config<PuckProps> {
         },
         render: Footer,
       },
-    },
     },
   };
 }
