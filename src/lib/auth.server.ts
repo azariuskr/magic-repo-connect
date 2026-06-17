@@ -14,6 +14,15 @@ export const auth = betterAuth({
     },
   }),
   secret: process.env.BETTER_AUTH_SECRET!,
+  baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8080",
+    /^https?:\/\/.*\.lovableproject\.com$/,
+    /^https?:\/\/.*\.lovable\.app$/,
+    /^https?:\/\/.*\.lovable\.dev$/,
+  ],
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
