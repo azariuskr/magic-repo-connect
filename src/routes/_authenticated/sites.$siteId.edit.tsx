@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Puck, type Data } from "@measured/puck";
-import puckCss from "@measured/puck/puck.css?url";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getSite, saveSite, publishSite } from "@/lib/sites.functions";
 import { buildPuckConfig } from "@/lib/blocks";
@@ -10,7 +10,10 @@ import { DEFAULT_THEME, PRESETS, type SiteTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/edit")({
   head: () => ({
-    links: [{ rel: "stylesheet", href: puckCss }],
+    links: [
+      { rel: "stylesheet", href: "https://unpkg.com/@measured/puck@0.20.2/dist/index.css" },
+      { rel: "stylesheet", href: "https://rsms.me/inter/inter.css" },
+    ],
   }),
   component: EditSite,
 });
