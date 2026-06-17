@@ -43,18 +43,21 @@ function RichTextEditor({
       },
     },
   });
-  if (!mounted) return <div className="h-24 rounded-md border bg-muted" />;
+  if (!mounted) return <div className="h-24 animate-pulse rounded-md border border-input bg-muted/40" />;
   return (
-    <div className="space-y-1">
-      <div className="flex gap-1 text-xs">
+    <div className="overflow-hidden rounded-md border border-input bg-background shadow-sm">
+      <div className="flex flex-wrap items-center gap-1 border-b border-input bg-muted/40 px-1.5 py-1">
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleBold().run()} label="B" active={!!editor?.isActive("bold")} />
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleItalic().run()} label="I" active={!!editor?.isActive("italic")} />
+        <span className="mx-0.5 h-4 w-px bg-border" />
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} label="H2" active={!!editor?.isActive("heading", { level: 2 })} />
+        <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} label="H3" active={!!editor?.isActive("heading", { level: 3 })} />
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleBulletList().run()} label="• List" active={!!editor?.isActive("bulletList")} />
+        <span className="mx-0.5 h-4 w-px bg-border" />
         <ToolbarBtn editor={editor} action={() => {
           const url = window.prompt("URL");
           if (url) editor?.chain().focus().setLink({ href: url }).run();
-        }} label="Link" active={!!editor?.isActive("link")} />
+        }} label="🔗 Link" active={!!editor?.isActive("link")} />
       </div>
       <EditorContent editor={editor} />
     </div>
@@ -77,7 +80,11 @@ function ToolbarBtn({
       type="button"
       disabled={!editor}
       onClick={action}
-      className={`rounded border px-2 py-0.5 ${active ? "bg-foreground text-background" : "bg-background"}`}
+      className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+        active
+          ? "bg-primary text-primary-foreground shadow-sm"
+          : "text-foreground/70 hover:bg-background hover:text-foreground"
+      } disabled:opacity-40`}
     >
       {label}
     </button>
