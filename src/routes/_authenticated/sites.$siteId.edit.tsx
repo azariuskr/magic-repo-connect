@@ -70,51 +70,83 @@ function EditSite() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-49px)] flex-col">
-      <div className="flex items-center justify-between border-b bg-card px-4 py-2">
-        <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">
+    <div className="flex h-[calc(100dvh-57px)] flex-col bg-muted/30">
+      <style>{`
+        .puck-shell { height: 100%; }
+        .puck-shell [class*="_Puck"] { --puck-color-azure-04: hsl(var(--primary) / 0.9); }
+        .puck-shell [class*="PuckCanvas"] { background: hsl(var(--muted)); }
+        .puck-shell [class*="SidebarSection"] { background: hsl(var(--card)); }
+        .puck-shell [class*="Puck-portal"] { z-index: 60; }
+        .puck-shell button[class*="IconButton"]:hover { background: hsl(var(--accent)); }
+        .puck-shell [class*="Drawer-item"] {
+          border-radius: 0.5rem;
+          transition: transform 120ms ease, box-shadow 120ms ease;
+        }
+        .puck-shell [class*="Drawer-item"]:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px -6px hsl(var(--primary) / 0.4);
+        }
+      `}</style>
+      <div className="flex items-center justify-between border-b bg-card/80 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link
+            to="/dashboard"
+            className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
             ← All sites
           </Link>
-          <span className="text-sm font-semibold">{site.name}</span>
-          <span className="text-xs text-muted-foreground">/s/{site.slug}</span>
+          <div className="h-5 w-px bg-border" />
+          <span className="truncate text-sm font-semibold">{site.name}</span>
+          <span className="hidden truncate rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+            /s/{site.slug}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {saveMut.isPending ? (
-            <span className="text-xs text-muted-foreground">Saving…</span>
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+              Saving…
+            </span>
           ) : saveMut.isSuccess ? (
-            <span className="text-xs text-muted-foreground">Saved</span>
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Saved
+            </span>
           ) : null}
           <button
             onClick={() => setShowTheme((v) => !v)}
-            className="rounded-md border px-3 py-1.5 text-xs hover:bg-accent"
+            className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+              showTheme ? "border-primary bg-primary/10 text-primary" : "hover:bg-accent"
+            }`}
           >
-            Theme
+            🎨 Theme
           </button>
           <a
             href={`/s/${site.slug}`}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md border px-3 py-1.5 text-xs hover:bg-accent"
+            className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
           >
-            Preview
+            Preview ↗
           </a>
           <button
             onClick={() => publishMut.mutate()}
             disabled={publishMut.isPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow disabled:opacity-50"
           >
             {publishMut.isPending ? "Publishing…" : site.publishedAt ? "Republish" : "Publish"}
           </button>
         </div>
       </div>
 
-      <div className="relative flex-1 overflow-hidden">
-        <Puck
-          config={config}
-          data={initialData}
-          onChange={(next) => scheduleSave({ data: next })}
-        />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="puck-shell h-full">
+          <Puck
+            config={config}
+            data={initialData}
+            onChange={(next) => scheduleSave({ data: next })}
+          />
+        </div>
         {showTheme && (
           <ThemePanel
             theme={theme}
