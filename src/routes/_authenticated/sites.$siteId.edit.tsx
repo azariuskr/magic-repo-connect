@@ -10,7 +10,10 @@ import { DEFAULT_THEME, PRESETS, type SiteTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/edit")({
   head: () => ({
-    links: [{ rel: "stylesheet", href: puckCss }],
+    links: [
+      { rel: "stylesheet", href: "https://unpkg.com/@measured/puck@0.20.2/dist/index.css" },
+      { rel: "stylesheet", href: "https://rsms.me/inter/inter.css" },
+    ],
   }),
   component: EditSite,
 });
