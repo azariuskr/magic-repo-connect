@@ -439,6 +439,69 @@ function MapBlock({ address, title }: MapBlockProps) {
   );
 }
 
+type FooterProps = {
+  businessName?: string;
+  tagline?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  hours?: string;
+  socialHtml?: string;
+};
+
+function Footer({ businessName, tagline, address, phone, email, hours, socialHtml }: FooterProps) {
+  const year = new Date().getFullYear();
+  return (
+    <footer
+      className="px-6 py-12 sm:px-10 lg:px-16"
+      style={{
+        backgroundColor: "var(--site-surface)",
+        color: "var(--site-fg)",
+        borderTop: "1px solid color-mix(in srgb, var(--site-brand) 25%, transparent)",
+      }}
+    >
+      <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <h3 className="text-lg font-semibold" style={{ color: "var(--site-brand)" }}>
+            {businessName || "Your business"}
+          </h3>
+          {tagline ? (
+            <p className="mt-2 text-sm" style={{ color: "var(--site-muted)" }}>
+              {tagline}
+            </p>
+          ) : null}
+        </div>
+        <div className="space-y-1 text-sm" style={{ color: "var(--site-muted)" }}>
+          {address ? <p>{address}</p> : null}
+          {phone ? <p>{phone}</p> : null}
+          {email ? (
+            <p>
+              <a href={`mailto:${email}`} style={{ color: "var(--site-fg)" }} className="hover:underline">
+                {email}
+              </a>
+            </p>
+          ) : null}
+        </div>
+        <div className="text-sm" style={{ color: "var(--site-muted)" }}>
+          {hours ? (
+            <div className="whitespace-pre-line">{hours}</div>
+          ) : null}
+          {socialHtml ? <div className="mt-3"><RichTextView html={socialHtml} /></div> : null}
+        </div>
+      </div>
+      <div
+        className="mx-auto mt-10 max-w-6xl border-t pt-6 text-center text-xs"
+        style={{
+          borderColor: "color-mix(in srgb, var(--site-fg) 12%, transparent)",
+          color: "var(--site-muted)",
+        }}
+      >
+        © {year} {businessName || "Your business"}. All rights reserved.
+      </div>
+    </footer>
+  );
+}
+
 // ---------- Puck config ----------
 
 type PuckProps = {
@@ -448,6 +511,7 @@ type PuckProps = {
   ContactForm: ContactFormProps;
   BookingCTA: BookingCTAProps;
   Map: MapBlockProps;
+  Footer: FooterProps;
 };
 
 const richTextField = {
