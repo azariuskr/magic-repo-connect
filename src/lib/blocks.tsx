@@ -39,22 +39,25 @@ function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring",
+          "min-h-[120px] w-full px-3 py-2 text-sm focus:outline-none [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-primary [&_a]:underline",
       },
     },
   });
-  if (!mounted) return <div className="h-24 rounded-md border bg-muted" />;
+  if (!mounted) return <div className="h-24 animate-pulse rounded-md border border-input bg-muted/40" />;
   return (
-    <div className="space-y-1">
-      <div className="flex gap-1 text-xs">
+    <div className="overflow-hidden rounded-md border border-input bg-background shadow-sm">
+      <div className="flex flex-wrap items-center gap-1 border-b border-input bg-muted/40 px-1.5 py-1">
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleBold().run()} label="B" active={!!editor?.isActive("bold")} />
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleItalic().run()} label="I" active={!!editor?.isActive("italic")} />
+        <span className="mx-0.5 h-4 w-px bg-border" />
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} label="H2" active={!!editor?.isActive("heading", { level: 2 })} />
+        <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} label="H3" active={!!editor?.isActive("heading", { level: 3 })} />
         <ToolbarBtn editor={editor} action={() => editor?.chain().focus().toggleBulletList().run()} label="• List" active={!!editor?.isActive("bulletList")} />
+        <span className="mx-0.5 h-4 w-px bg-border" />
         <ToolbarBtn editor={editor} action={() => {
           const url = window.prompt("URL");
           if (url) editor?.chain().focus().setLink({ href: url }).run();
-        }} label="Link" active={!!editor?.isActive("link")} />
+        }} label="🔗 Link" active={!!editor?.isActive("link")} />
       </div>
       <EditorContent editor={editor} />
     </div>
@@ -77,7 +80,11 @@ function ToolbarBtn({
       type="button"
       disabled={!editor}
       onClick={action}
-      className={`rounded border px-2 py-0.5 ${active ? "bg-foreground text-background" : "bg-background"}`}
+      className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+        active
+          ? "bg-primary text-primary-foreground shadow-sm"
+          : "text-foreground/70 hover:bg-background hover:text-foreground"
+      } disabled:opacity-40`}
     >
       {label}
     </button>
@@ -432,6 +439,69 @@ function MapBlock({ address, title }: MapBlockProps) {
   );
 }
 
+type FooterProps = {
+  businessName?: string;
+  tagline?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  hours?: string;
+  socialHtml?: string;
+};
+
+function Footer({ businessName, tagline, address, phone, email, hours, socialHtml }: FooterProps) {
+  const year = new Date().getFullYear();
+  return (
+    <footer
+      className="px-6 py-12 sm:px-10 lg:px-16"
+      style={{
+        backgroundColor: "var(--site-surface)",
+        color: "var(--site-fg)",
+        borderTop: "1px solid color-mix(in srgb, var(--site-brand) 25%, transparent)",
+      }}
+    >
+      <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <h3 className="text-lg font-semibold" style={{ color: "var(--site-brand)" }}>
+            {businessName || "Your business"}
+          </h3>
+          {tagline ? (
+            <p className="mt-2 text-sm" style={{ color: "var(--site-muted)" }}>
+              {tagline}
+            </p>
+          ) : null}
+        </div>
+        <div className="space-y-1 text-sm" style={{ color: "var(--site-muted)" }}>
+          {address ? <p>{address}</p> : null}
+          {phone ? <p>{phone}</p> : null}
+          {email ? (
+            <p>
+              <a href={`mailto:${email}`} style={{ color: "var(--site-fg)" }} className="hover:underline">
+                {email}
+              </a>
+            </p>
+          ) : null}
+        </div>
+        <div className="text-sm" style={{ color: "var(--site-muted)" }}>
+          {hours ? (
+            <div className="whitespace-pre-line">{hours}</div>
+          ) : null}
+          {socialHtml ? <div className="mt-3"><RichTextView html={socialHtml} /></div> : null}
+        </div>
+      </div>
+      <div
+        className="mx-auto mt-10 max-w-6xl border-t pt-6 text-center text-xs"
+        style={{
+          borderColor: "color-mix(in srgb, var(--site-fg) 12%, transparent)",
+          color: "var(--site-muted)",
+        }}
+      >
+        © {year} {businessName || "Your business"}. All rights reserved.
+      </div>
+    </footer>
+  );
+}
+
 // ---------- Puck config ----------
 
 type PuckProps = {
@@ -441,6 +511,7 @@ type PuckProps = {
   ContactForm: ContactFormProps;
   BookingCTA: BookingCTAProps;
   Map: MapBlockProps;
+  Footer: FooterProps;
 };
 
 const richTextField = {
@@ -578,6 +649,28 @@ export function buildPuckConfig(siteId?: string): Config<PuckProps> {
         },
         defaultProps: { title: "Find us", address: "1 Infinite Loop, Cupertino, CA" },
         render: MapBlock,
+      },
+      Footer: {
+        label: "Footer",
+        fields: {
+          businessName: { type: "text", label: "Business name" },
+          tagline: { type: "text", label: "Tagline" },
+          address: { type: "text", label: "Address" },
+          phone: { type: "text", label: "Phone" },
+          email: { type: "text", label: "Email" },
+          hours: { type: "textarea", label: "Opening hours" },
+          socialHtml: richTextField,
+        },
+        defaultProps: {
+          businessName: "Your business",
+          tagline: "Crafted with care since 2024.",
+          address: "123 Main Street, City",
+          phone: "+1 (555) 123-4567",
+          email: "hello@example.com",
+          hours: "Mon–Fri: 9:00 – 19:00\nSat: 10:00 – 16:00\nSun: closed",
+          socialHtml: "<p><a href=\"#\">Instagram</a> · <a href=\"#\">Facebook</a></p>",
+        },
+        render: Footer,
       },
     },
   };
