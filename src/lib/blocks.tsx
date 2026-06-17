@@ -649,7 +649,29 @@ export function buildPuckConfig(siteId?: string): Config<PuckProps> {
         },
         defaultProps: { title: "Find us", address: "1 Infinite Loop, Cupertino, CA" },
         render: MapBlock,
+      Footer: {
+        label: "Footer",
+        fields: {
+          businessName: { type: "text", label: "Business name" },
+          tagline: { type: "text", label: "Tagline" },
+          address: { type: "text", label: "Address" },
+          phone: { type: "text", label: "Phone" },
+          email: { type: "text", label: "Email" },
+          hours: { type: "textarea", label: "Opening hours" },
+          socialHtml: richTextField,
+        },
+        defaultProps: {
+          businessName: "Your business",
+          tagline: "Crafted with care since 2024.",
+          address: "123 Main Street, City",
+          phone: "+1 (555) 123-4567",
+          email: "hello@example.com",
+          hours: "Mon–Fri: 9:00 – 19:00\nSat: 10:00 – 16:00\nSun: closed",
+          socialHtml: "<p><a href=\"#\">Instagram</a> · <a href=\"#\">Facebook</a></p>",
+        },
+        render: Footer,
       },
+    },
     },
   };
 }
