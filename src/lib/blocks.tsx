@@ -39,7 +39,7 @@ function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring",
+          "min-h-[120px] w-full px-3 py-2 text-sm focus:outline-none [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-primary [&_a]:underline",
       },
     },
   });
