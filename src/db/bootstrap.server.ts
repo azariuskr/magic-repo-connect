@@ -57,6 +57,24 @@ CREATE TABLE IF NOT EXISTS "sites" (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS "site_pages" (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  site_id UUID NOT NULL REFERENCES "sites"(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  path TEXT NOT NULL,
+  is_home BOOLEAN NOT NULL DEFAULT FALSE,
+  nav_label TEXT,
+  nav_order INTEGER NOT NULL DEFAULT 0,
+  show_in_nav BOOLEAN NOT NULL DEFAULT TRUE,
+  seo_title TEXT,
+  seo_description TEXT,
+  puck_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  published_data JSONB,
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS site_pages_site_id_path_key ON "site_pages" (site_id, path);
 CREATE TABLE IF NOT EXISTS "site_submissions" (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id UUID NOT NULL REFERENCES "sites"(id) ON DELETE CASCADE,
