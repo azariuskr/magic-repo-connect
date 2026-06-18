@@ -21,7 +21,7 @@ function Dashboard() {
   const createMut = useMutation({
     mutationFn: (input: { name: string; slug: string }) => create({ data: input }),
     onSuccess: (site) => {
-      navigate({ to: "/sites/$siteId/edit", params: { siteId: site.id } });
+      navigate({ to: "/sites/$siteId/pages", params: { siteId: site.id } });
     },
   });
 
@@ -91,7 +91,7 @@ function Dashboard() {
           {sitesQuery.data.map((site) => (
             <Link
               key={site.id}
-              to="/sites/$siteId/edit"
+              to="/sites/$siteId/pages"
               params={{ siteId: site.id }}
               className="block rounded-lg border bg-card p-5 transition-colors hover:bg-accent"
             >

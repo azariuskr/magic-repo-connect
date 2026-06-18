@@ -38,7 +38,7 @@ export const createSite = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { ensureSchema } = await import("@/db/bootstrap.server");
     const { db } = await import("@/db/client.server");
-    const { sites } = await import("@/db/schema");
+    const { sites, sitePages } = await import("@/db/schema");
     await ensureSchema();
     const user = await requireUser();
     const defaultTheme = {
@@ -53,7 +53,7 @@ export const createSite = createServerFn({ method: "POST" })
         font: "Inter, system-ui, sans-serif",
       },
     };
-    const defaultData = { content: [], root: { props: {} }, zones: {} };
+    const emptyPuck = { content: [], root: { props: {} }, zones: {} };
     const [row] = await db
       .insert(sites)
       .values({
@@ -61,9 +61,20 @@ export const createSite = createServerFn({ method: "POST" })
         name: data.name,
         slug: data.slug,
         theme: defaultTheme,
-        data: defaultData,
+        data: emptyPuck,
       })
       .returning();
+    // Seed a Home page so the per-page editor has somewhere to go.
+    await db.insert(sitePages).values({
+      siteId: row.id,
+      title: "Home",
+      path: "/",
+      isHome: true,
+      navLabel: "Home",
+      navOrder: 0,
+      showInNav: true,
+      puckData: emptyPuck as never,
+    });
     return row;
   });
 
