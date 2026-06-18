@@ -18,6 +18,7 @@ import { Route as SSiteSlugSplatRouteImport } from './routes/s.$siteSlug.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedSitesSiteIdEditRouteImport } from './routes/_authenticated/sites.$siteId.edit'
 import { Route as AuthenticatedSitesSiteIdPagesIndexRouteImport } from './routes/_authenticated/sites.$siteId.pages.index'
+import { Route as AuthenticatedSitesSiteIdPagesPageIdEditRouteImport } from './routes/_authenticated/sites.$siteId.pages.$pageId.edit'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -66,6 +67,12 @@ const AuthenticatedSitesSiteIdPagesIndexRoute =
     path: '/sites/$siteId/pages/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSitesSiteIdPagesPageIdEditRoute =
+  AuthenticatedSitesSiteIdPagesPageIdEditRouteImport.update({
+    id: '/sites/$siteId/pages/$pageId/edit',
+    path: '/sites/$siteId/pages/$pageId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/s/$siteSlug/': typeof SSiteSlugIndexRoute
   '/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
   '/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesByTo {
   '/s/$siteSlug': typeof SSiteSlugIndexRoute
   '/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
   '/sites/$siteId/pages': typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +107,7 @@ export interface FileRoutesById {
   '/s/$siteSlug/': typeof SSiteSlugIndexRoute
   '/_authenticated/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
   '/_authenticated/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  '/_authenticated/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/'
     | '/sites/$siteId/edit'
     | '/sites/$siteId/pages/'
+    | '/sites/$siteId/pages/$pageId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug'
     | '/sites/$siteId/edit'
     | '/sites/$siteId/pages'
+    | '/sites/$siteId/pages/$pageId/edit'
   id:
     | '__root__'
     | '/'
@@ -131,6 +143,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/'
     | '/_authenticated/sites/$siteId/edit'
     | '/_authenticated/sites/$siteId/pages/'
+    | '/_authenticated/sites/$siteId/pages/$pageId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSitesSiteIdPagesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sites/$siteId/pages/$pageId/edit': {
+      id: '/_authenticated/sites/$siteId/pages/$pageId/edit'
+      path: '/sites/$siteId/pages/$pageId/edit'
+      fullPath: '/sites/$siteId/pages/$pageId/edit'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdPagesPageIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -214,6 +234,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedSitesSiteIdEditRoute: typeof AuthenticatedSitesSiteIdEditRoute
   AuthenticatedSitesSiteIdPagesIndexRoute: typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  AuthenticatedSitesSiteIdPagesPageIdEditRoute: typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -221,6 +242,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSitesSiteIdEditRoute: AuthenticatedSitesSiteIdEditRoute,
   AuthenticatedSitesSiteIdPagesIndexRoute:
     AuthenticatedSitesSiteIdPagesIndexRoute,
+  AuthenticatedSitesSiteIdPagesPageIdEditRoute:
+    AuthenticatedSitesSiteIdPagesPageIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
