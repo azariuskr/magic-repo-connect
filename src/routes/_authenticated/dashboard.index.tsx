@@ -21,7 +21,7 @@ function Dashboard() {
   const createMut = useMutation({
     mutationFn: (input: { name: string; slug: string }) => create({ data: input }),
     onSuccess: (site) => {
-      navigate({ to: "/sites/$siteId/edit", params: { siteId: site.id } });
+      navigate({ to: "/sites/$siteId/pages", params: { siteId: site.id } });
     },
   });
 
