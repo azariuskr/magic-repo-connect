@@ -98,6 +98,32 @@ export const sites = pgTable("sites", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const sitePages = pgTable(
+  "site_pages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    siteId: uuid("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    path: text("path").notNull(),
+    isHome: boolean("is_home").notNull().default(false),
+    navLabel: text("nav_label"),
+    navOrder: integer("nav_order").notNull().default(0),
+    showInNav: boolean("show_in_nav").notNull().default(true),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    puckData: jsonb("puck_data").$type<PuckData>().notNull().default(sql`'{}'::jsonb`),
+    publishedData: jsonb("published_data").$type<PuckData | null>(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    siteSlugPath: uniqueIndex("site_pages_site_id_path_key").on(t.siteId, t.path),
+  }),
+);
+
 export const siteSubmissions = pgTable("site_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
   siteId: uuid("site_id")
@@ -109,3 +135,6 @@ export const siteSubmissions = pgTable("site_submissions", {
 
 export type Site = typeof sites.$inferSelect;
 export type NewSite = typeof sites.$inferInsert;
+export type SitePage = typeof sitePages.$inferSelect;
+export type NewSitePage = typeof sitePages.$inferInsert;
+
