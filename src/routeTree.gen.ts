@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as SSiteSlugIndexRouteImport } from './routes/s.$siteSlug.index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as SSiteSlugSplatRouteImport } from './routes/s.$siteSlug.$'
@@ -31,11 +30,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SSlugRoute = SSlugRouteImport.update({
-  id: '/s/$slug',
-  path: '/s/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSiteSlugIndexRoute = SSiteSlugIndexRouteImport.update({
@@ -69,7 +63,6 @@ const AuthenticatedSitesSiteIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/s/$slug': typeof SSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/s/$siteSlug/$': typeof SSiteSlugSplatRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -79,7 +72,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/s/$slug': typeof SSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/s/$siteSlug/$': typeof SSiteSlugSplatRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
@@ -91,7 +83,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/s/$slug': typeof SSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/s/$siteSlug/$': typeof SSiteSlugSplatRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -103,7 +94,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/s/$slug'
     | '/api/auth/$'
     | '/s/$siteSlug/$'
     | '/dashboard/'
@@ -113,7 +103,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/s/$slug'
     | '/api/auth/$'
     | '/s/$siteSlug/$'
     | '/dashboard'
@@ -124,7 +113,6 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/s/$slug'
     | '/api/auth/$'
     | '/s/$siteSlug/$'
     | '/_authenticated/dashboard/'
@@ -136,7 +124,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  SSlugRoute: typeof SSlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   SSiteSlugSplatRoute: typeof SSiteSlugSplatRoute
   SSiteSlugIndexRoute: typeof SSiteSlugIndexRoute
@@ -163,13 +150,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/s/$slug': {
-      id: '/s/$slug'
-      path: '/s/$slug'
-      fullPath: '/s/$slug'
-      preLoaderRoute: typeof SSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$siteSlug/': {
@@ -227,7 +207,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  SSlugRoute: SSlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   SSiteSlugSplatRoute: SSiteSlugSplatRoute,
   SSiteSlugIndexRoute: SSiteSlugIndexRoute,
