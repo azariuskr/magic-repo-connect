@@ -1,111 +1,234 @@
-# Small-business site builder — v1 plan
+# Unified Product & Architecture Plan
 
-A multi-tenant app where signed-in users build small business sites by dragging blocks in Puck, edit text inline with Tiptap, pick a theme, and publish to a public `/s/:slug` URL.
+> Canonical roadmap. MVP target: **multi-page small-business website** (Home / About / Services / Contact + blog). Commerce, workflows, AI builder come later.
 
-## ⚠️ Heads-up on Better Auth
+## 1. Product Vision
 
-Better Auth needs a direct Postgres connection. The runtime here is Cloudflare Workers (TanStack Start SSR), which can't open raw `pg` TCP sockets. Two viable paths:
+A hosted platform where users can create small-business websites, simple stores, order platforms, blogs, forms, landing pages, and automation-backed admin panels.
 
-- **A. Better Auth + Supabase Postgres via HTTP driver** (`@better-auth/adapter-drizzle` + Drizzle + `postgres` over Supabase pooler with `prepare:false`, or Neon/Hyperdrive). Works, but Lovable Cloud doesn't expose the raw connection string to the Worker by default — you'd need to add `DATABASE_URL` as a secret pointing at the Cloud's Postgres (or a Neon DB you own).
-- **B. Lovable Cloud auth (Supabase Auth)** — already wired, zero config, same Postgres, RLS-ready. Strongly recommended for v1; you can swap to Better Auth later (auth is one module).
+Simple for normal users:
+- Create a site, pick a template, edit pages visually.
+- Add products, services, blog posts, forms, orders.
+- Manage customers and submissions.
+- Connect workflows and integrations.
+- See analytics.
+- Use AI to generate and safely modify pages, content, workflows, and modules.
 
-I'll proceed assuming **A**. If `DATABASE_URL` isn't available at build/runtime, I'll fall back to B and flag it.
+Under the hood, generic like Directus: collections, fields, records, relations, permissions, generated admin screens, module/plugin system, workflows, events/actions, integrations, component/data bindings.
 
-## Architecture
+Core principle: **products, orders, blog, forms, analytics, payments, workflows are modules. Collections, fields, records, permissions, events, actions, pages, navigation, bindings are core primitives.**
 
-```text
-src/
-  routes/
-    __root.tsx
-    index.tsx                    # marketing / login CTA
-    auth.tsx                     # Better Auth sign-in/up (email + password)
-    _authenticated/
-      route.tsx                  # gate
-      dashboard.index.tsx        # list of user's sites + "New site"
-      sites.$siteId.edit.tsx     # Puck editor + theme panel
-    s.$slug.tsx                  # PUBLIC render route (SSR)
-    api/auth/$.ts                # Better Auth handler
-  lib/
-    auth.ts                      # Better Auth server config
-    auth-client.ts               # better-auth/react client
-    sites.functions.ts           # createServerFn: list/get/create/save/publish
-    render/
-      blocks.tsx                 # Puck config: shared block components
-      theme.tsx                  # theme tokens -> CSS vars
-  db/
-    schema.ts                    # Drizzle: users, sessions, accounts (BA), sites
-    client.ts                    # postgres-js + drizzle (server-only)
+## 2. MVP Positioning
+
+Position as **a small-business website and order platform with built-in content, commerce, workflows, and AI assistance** — not as a generic backend builder.
+
+Initial use cases: single-product store, local service site, restaurant/café menu, barber/salon booking, link-in-bio, creator landing, small blog, form-based quote/order.
+
+**First demo target: multi-page small business** (Home, About, Services, Contact, Blog).
+
+## 3. Core Stack
+
+- **App framework**: TanStack Start + TanStack Router + TanStack Query + React + TypeScript + Vite.
+- **UI**: Tailwind v4, shadcn/ui, Radix, lucide-react, recharts, sonner.
+- **Auth**: Better Auth + Drizzle adapter (email/password first; OAuth, orgs, Stripe billing plugin, 2FA later).
+- **DB**: Postgres + Drizzle ORM + Drizzle Kit migrations + Zod.
+- **Site builder**: Puck + Tiptap; theme tokens; Puck data stored as JSONB.
+- **Workflow builder**: React Flow (canvas only) + Trigger.dev (execution, retries, schedules, logs).
+- **AI builder**: guarded layer — AI generates Puck JSON, Tiptap content, theme tokens, collection definitions, product copy, blog drafts, form schemas, workflow definitions, page plans, navigation. **Never** raw SQL, arbitrary backend code, secrets, payment logic, unreviewed permissions, unsafe JS.
+
+Reference repos: `nobruf/shadcn-next-workflows`, `azariuskr/template-main`, `noorjsdivs/webflow-app-yt`, `dyad-sh/dyad`.
+
+## 4. High-Level Architecture
+
+```
+Platform App: marketing, auth, dashboards, site builder, module admin,
+              workflow builder, integrations, analytics, AI assistant.
+
+Core Platform: auth, workspaces, sites, members, pages, navigation,
+               modules, collections, fields, records, permissions,
+               events, actions, workflows, integrations, component
+               bindings, theme system, versioning, AI patch system.
+
+Runtime: public route resolver, page renderer, dynamic collection
+         renderer, event emitter, workflow runner, integration
+         executor, analytics tracker, background jobs.
+
+Modules: commerce, blog, forms, customers, analytics, payments,
+         integrations, workflows, AI assistant.
 ```
 
-## Database (Drizzle migrations)
+## 5. Core Product Model
 
-- Better Auth tables: `user`, `session`, `account`, `verification` (per BA schema).
-- `sites`:
-  - `id uuid pk`
-  - `owner_id` → `user.id` cascade
-  - `slug citext unique`
-  - `name text`
-  - `theme jsonb` (preset key + token overrides)
-  - `data jsonb` (Puck `{ content, root, zones }`)
-  - `published_data jsonb` nullable (last published snapshot)
-  - `published_at timestamptz` nullable
-  - `created_at` / `updated_at`
+- **Workspace** → members, billing, sites.
+- **Site** → pages, theme, navigation, modules, collections, workflows, integrations, analytics, admin.
+- **Page** → Puck document + routing metadata. Types: `static`, `collection_list`, `collection_detail`, `system`, `redirect`.
+- **Navigation** → separate metadata layer (menus: header / footer / mobile / custom). Puck header/footer blocks read from menus.
+- **Module** → plugin contributing models, admin views, Puck blocks, events, actions, workflows, permissions.
+- **Collection** → generic data model (products, orders, blog_posts, testimonials, menu_items, etc.).
+- **Field** → text, textarea, rich_text, number, money, boolean, select, date, datetime, media, relation, json, slug, email, url, status.
+- **Record** → hybrid: system/business modules use physical tables; custom user collections use generic JSONB records.
+- **Workflow** → visual automation (nodes + edges) triggered by events; steps execute registered actions.
 
-Public render reads `published_data` only — drafts stay private. No RLS needed (Better Auth + server fns enforce ownership in queries).
+## 6. Database Layer
 
-## Puck blocks (v1)
+Postgres + Drizzle. **Use migrations, not `ensureSchema()` in production.**
 
-Six blocks, each a React component + Puck config (fields → form schema):
+Tables (grouped):
+- **Auth (Better Auth)**: `user`, `session`, `account`, `verification`.
+- **Workspaces/sites**: `workspaces`, `workspace_members`, `sites`, `site_members`.
+- **Pages/nav**: `site_pages` (with `published_puck_data`, `collection_key`, `route_param`), `page_versions`, `site_menus`, `site_menu_items`.
+- **Modules**: `modules`, `module_installs`, `module_dependencies`.
+- **Generic engine**: `collections`, `collection_fields`, `collection_records` (JSONB + GIN index), `collection_relationships`.
+- **Permissions**: `roles`, `permissions` (resource_type + action + condition).
+- **Bindings**: `component_bindings` (data_source / event / action).
+- **Events/actions**: `event_definitions`, `action_definitions`, `events`.
+- **Workflows**: `workflows`, `workflow_versions`, `workflow_runs`, `workflow_step_runs`, `workflow_schedules`.
+- **Integrations**: `integration_providers`, `integration_accounts`, `custom_http_integrations`, `custom_http_actions`.
+- **Commerce (physical)**: `products`, `customers`, `orders`, `order_items`.
+- **Blog (physical)**: `blog_posts`, `blog_categories`.
+- **Forms**: `forms`, `form_submissions`.
+- **Analytics**: `analytics_events`, `analytics_daily`.
+- **AI**: `ai_generations`, `ai_patch_applications`.
 
-1. **Hero** — eyebrow, title, subtitle, CTA label+href, bg image, alignment. Title/subtitle via Tiptap.
-2. **Services** — repeating items `{ name, description, price }`. Descriptions via Tiptap.
-3. **Pricing** — tier cards `{ name, price, features[], cta }`.
-4. **ContactForm** — fields config; posts to a server fn that stores submissions in a `submissions` table linked to `site_id`.
-5. **BookingCTA** — title, subtitle, external booking URL, button label.
-6. **Map** — address + embedded Google Maps iframe (no API key needed for basic embed).
+(Full column definitions in source plan; see prior message in chat history for schemas.)
 
-Shared `RichText` component wraps `@tiptap/react` + StarterKit + Link. Read-only on the public render route (Tiptap `editable:false`), editable inside Puck.
+## 7. Module System
 
-## Theming
+```ts
+type PlatformModule = {
+  key: string;
+  name: string;
+  version: string;
+  collections?: CollectionDefinition[];
+  physicalTables?: string[];
+  adminViews?: AdminViewDefinition[];
+  puckBlocks?: PuckBlockDefinition[];
+  events?: EventDefinition[];
+  actions?: ActionDefinition[];
+  workflowTemplates?: WorkflowTemplate[];
+  permissions?: PermissionDefinition[];
+  install?: (ctx: InstallContext) => Promise<void>;
+  uninstall?: (ctx: InstallContext) => Promise<void>;
+};
+```
 
-`theme.tokens` → CSS variables injected on the site root:
-- `--brand`, `--brand-fg`, `--bg`, `--fg`, `--muted`, `--radius`, `--font-sans`.
-- Preset: **Barber dark** (`#0a0a0a / #1a1a1a / #d4af37 / #f5f5f5`).
-- Side panel in editor: color pickers + radius + font select. Stored on `sites.theme`.
+Modules: **commerce**, **blog**, **forms**, **analytics**, **workflows**, **integrations**, **payments-stripe**.
 
-## Editor flow
+## 8. Project Layout
 
-- `/dashboard` → cards for each site + "Create site" (asks for name + slug).
-- `/sites/:id/edit`:
-  - Left: Puck component palette.
-  - Center: Puck canvas (autosave debounced 800ms via `saveSite` server fn).
-  - Right: Puck fields panel + a **Theme** tab.
-  - Top bar: site name, slug, **Preview** (`/s/:slug?draft=token`), **Publish** (copies `data` → `published_data`, stamps `published_at`).
+```
+src/
+├── app/              router, start, query-client
+├── routes/           __root, index, auth, _authenticated/*, s/$siteSlug/$, api/*
+├── db/               client.server, schema/*, migrations/
+├── core/             auth, workspaces, sites, pages, navigation, modules,
+│                     collections, permissions, events, actions, workflows,
+│                     integrations, analytics, ai, storage
+├── modules/          commerce, blog, forms, analytics, payments-stripe,
+│                     integrations-http, workflows
+├── components/       ui, layout, admin (DataTable, RecordForm, CollectionAdmin,
+│                     FieldRenderer), builder (puck, theme, bindings),
+│                     workflows (canvas, nodes, edges, panels), ai
+├── server-fns/       sites, pages, navigation, collections, records,
+│                     workflows, integrations, analytics, ai
+├── trigger/          workflows, schedules, analytics, integrations
+├── lib/              auth-client, utils, slug, sanitize, env, constants
+└── styles.css
+```
 
-## Public render route `/s/$slug`
+## 9. Public Route Resolver
 
-- `loader`: calls public server fn `getPublishedSite({ slug })` (publishable client + safe column projection). Returns 404 if not published.
-- Renders `<Puck.Render config={puckConfig} data={published_data} />` inside a `<ThemeProvider tokens={theme}>` wrapper.
-- `head()` derives `<title>` and meta description from Hero block or site name.
-- SSR on; cacheable.
+Single catch-all: `/s/$siteSlug/$`. Later resolve by host for custom domains.
 
-## Packages to add
+Flow: resolve site → try exact page match → try dynamic template (`/products/:slug`) → resolve collection record → render with `currentRecord` context. Supports static, dynamic product/blog pages, system pages, redirects.
 
-`better-auth`, `@better-auth/cli`, `drizzle-orm`, `drizzle-kit`, `postgres`, `@measured/puck`, `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`, `zod`.
+## 10. Puck Builder
 
-## What v1 does NOT include (for later turns)
+One page at a time. Edit `puck_data`, publish to `published_puck_data`.
 
-- Multiple pages per site (single page only).
-- Custom domains.
-- Image uploads (use URL fields for now — storage comes next).
-- Additional themes beyond Barber dark.
-- Gallery/Testimonials/FAQ/Team/Menu/etc. blocks.
-- Google OAuth (email/password only in v1; BA Google requires extra config).
+Block categories: Layout, Content, Commerce, Blog, Forms, Navigation, Media, Social, Analytics, Custom collections.
 
-## One blocker to confirm before I build
+Initial blocks: Hero, RichText, Image, VideoEmbed, Services, Pricing, Testimonials, FAQ, ContactForm, NewsletterForm, ProductGrid, ProductCard, ProductDetail, OrderForm, BlogList, BlogPost, Map, Header, Footer, NavMenu, Button, Section, Spacer.
 
-I need a Postgres URL the Worker can reach. Options:
-1. You provide a `DATABASE_URL` secret (Neon/Supabase pooler URL — fastest, recommended).
-2. I fall back to Lovable Cloud auth (Supabase Auth) and keep the rest of the plan identical.
+Tiptap stores JSON; render sanitized HTML.
 
-Reply with **(1) I'll provide DATABASE_URL**, **(2) fall back to Cloud auth**, or **(3) proceed and let me know exactly what URL format you need** and I'll start scaffolding the non-auth pieces in parallel.
+## 11. Generic Admin Renderer
+
+Directus-like. Components: CollectionList, RecordCreate, RecordEdit, RecordDetail, RelationPicker, MediaField, RichTextField, StatusField, MoneyField, SlugField, JsonField, SelectField, RepeaterField.
+
+Admin views declared via metadata so modules can register screens without handcoding.
+
+## 12. Workflow Architecture
+
+React Flow edits JSON only — never executes. Execution: event emitted → validate payload → match workflows → create `workflow_run` → Trigger.dev task runs steps → action registry executes each → log step runs → update status.
+
+Initial nodes: Trigger, Condition, Delay, SendEmail, CallWebhook, CreateRecord, UpdateRecord, CreateOrder, UpdateOrderStatus, TrackAnalytics, RunIntegrationAction, End.
+
+## 13. Integrations
+
+Initial: Email, Webhook, Custom HTTP API, Stripe payment links. Later: Stripe Checkout, Google Sheets, Telegram/WhatsApp. **No arbitrary user backend code in MVP.**
+
+## 14. AI Builder
+
+AI modifies **metadata**, not source. Output types: `site_plan`, `page_patch`, `puck_data`, `theme_patch`, `collection_definition`, `workflow_definition`, `blog_draft`, `product_copy`, `form_schema`, `navigation_patch`.
+
+Pipeline: prompt → structured JSON → validate (Zod/JSON Schema) → check module compatibility → diff/preview → user approves → save version → allow rollback.
+
+Assistant UX inside builder: create page, improve section, generate product/blog page, build order workflow, create form, suggest navigation, make site more premium, explain workflow.
+
+## 15. Security Rules
+
+- Never trust Puck JSON or AI output blindly.
+- Sanitize rich text (DOMPurify / isomorphic-dompurify).
+- Validate all server function inputs with Zod.
+- Site/workspace permission checks everywhere.
+- Encrypt integration credentials.
+- Don't expose secrets to workflows.
+- No arbitrary code execution in MVP.
+- Version before applying AI changes.
+- Rate limiting, audit logs.
+
+## 16. Build Phases
+
+| # | Phase | Deliverable |
+|---|---|---|
+| 1 | Foundation | Auth, workspaces, sites, single-page Puck editor, theme, public render. |
+| 2 | Pages & Navigation | Multi-page sites, menus, route resolver, page switcher. |
+| 3 | Metadata Engine | Collections, fields, records, generic admin, basic permissions. |
+| 4 | Modules | Module registry + installs; commerce, blog, forms, analytics scaffolds. |
+| 5 | Commerce / Blog / Forms | Products, orders, customers, blog posts, forms, submissions, admin + Puck blocks. |
+| 6 | Events & Workflows | Event/action registry, workflow schema, React Flow builder, Trigger.dev runner, logs, schedules. |
+| 7 | Integrations | Webhooks, custom HTTP, email, Stripe payment links, credentials. |
+| 8 | AI Builder | Assistant panel, generators (site/page/theme/workflow/collection), patch preview, approve/rollback. |
+| 9 | Production Hardening | Migrations, audit logs, rate limits, sanitization, error reporting, retries, secret encryption, billing, rollups, backups, observability. |
+
+## 17. Timeline (with strong AI tooling)
+
+- Prototype: 4–6 weeks
+- Usable MVP: 8–12 weeks
+- Paid beta: 3–5 months
+- Robust v1: 6–9 months
+
+First paid beta includes: sites, pages, navigation, Puck builder, themes, blog, products, orders, forms, customers, basic analytics, simple workflows, webhook/email integrations, AI page/content generation.
+
+**Postpone**: full custom code execution, full integration marketplace, advanced Stripe Connect, advanced permissions UI, complex schema migration engine, app marketplace, white-label deployments.
+
+## 18. Key Architectural Rule
+
+```
+Modules define collections, fields, admin views, blocks, events, actions, permissions.
+Pages use Puck blocks.
+Blocks bind to collections, records, events, actions.
+Events trigger workflows.
+Workflows execute actions via Trigger.dev.
+Integrations are action providers.
+AI proposes metadata patches.
+Validators protect the system before anything is saved.
+```
+
+---
+
+## Current State (as of save)
+
+- **Phase 1** partially complete: TanStack Start app, Better Auth (email/password) with Drizzle adapter, Postgres via `DATABASE_URL`, dashboard, create site, single-page Puck editor with Tiptap, barber-dark theme, public `/s/$slug` render. Schema bootstrapped via `src/db/bootstrap.server.ts` (needs migration to Drizzle Kit for prod).
+- **Next up (MVP target = multi-page small business)**: Phase 2 — `site_pages` + `site_menus`, route resolver at `/s/$siteSlug/$`, page switcher in builder, Header/Footer/NavMenu blocks reading from menus. Then Phase 5-lite blog module.
