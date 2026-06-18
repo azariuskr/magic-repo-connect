@@ -5,9 +5,6 @@ import { PublishedSite } from "@/lib/published-site";
 import type { SiteTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/s/$siteSlug/")({
-  head: () => ({
-    links: [{ rel: "stylesheet", href: "https://rsms.me/inter/inter.css" }],
-  }),
   loader: async ({ params }) => {
     const result = await getPublishedPage({
       data: { siteSlug: params.siteSlug, path: "/" },
