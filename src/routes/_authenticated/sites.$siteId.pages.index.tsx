@@ -64,6 +64,13 @@ function PagesIndex() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            to="/sites/$siteId/menus"
+            params={{ siteId }}
+            className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
+          >
+            Menus
+          </Link>
           {site ? (
             <a
               href={`/s/${site.slug}`}

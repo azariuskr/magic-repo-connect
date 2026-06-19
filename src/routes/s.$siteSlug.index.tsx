@@ -52,7 +52,7 @@ function NotFound() {
 }
 
 function PublicHome() {
-  const { site, page, nav } = Route.useLoaderData();
+  const { site, page, nav, primaryMenu, footerMenu } = Route.useLoaderData();
   const { siteSlug } = Route.useParams();
   const data = (page.publishedData as Data) ?? ({ content: [], root: { props: {} } } as Data);
   return (
@@ -62,6 +62,8 @@ function PublicHome() {
       theme={site.theme as SiteTheme}
       currentPath="/"
       nav={nav}
+      primaryMenu={primaryMenu}
+      footerMenu={footerMenu}
       pageData={data}
     />
   );

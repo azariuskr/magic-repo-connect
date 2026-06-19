@@ -51,7 +51,7 @@ export const Route = createFileRoute("/s/$siteSlug/$")({
 });
 
 function PublicPage() {
-  const { site, page, nav, currentPath } = Route.useLoaderData();
+  const { site, page, nav, primaryMenu, footerMenu, currentPath } = Route.useLoaderData();
   const { siteSlug } = Route.useParams();
   const data = (page.publishedData as Data) ?? ({ content: [], root: { props: {} } } as Data);
   return (
@@ -61,6 +61,8 @@ function PublicPage() {
       theme={site.theme as SiteTheme}
       currentPath={currentPath}
       nav={nav}
+      primaryMenu={primaryMenu}
+      footerMenu={footerMenu}
       pageData={data}
     />
   );
