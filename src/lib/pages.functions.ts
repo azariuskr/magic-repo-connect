@@ -313,9 +313,17 @@ export const getPublishedPage = createServerFn({ method: "GET" })
       label: r.navLabel?.trim() || r.title,
     }));
 
+    const { loadPublishedMenu } = await import("@/lib/menus.functions");
+    const [primaryMenu, footerMenu] = await Promise.all([
+      loadPublishedMenu(site.id, "primary"),
+      loadPublishedMenu(site.id, "footer"),
+    ]);
+
     return {
       site: { name: site.name, slug: site.slug, theme: site.theme },
       page,
       nav,
+      primaryMenu,
+      footerMenu,
     };
   });
