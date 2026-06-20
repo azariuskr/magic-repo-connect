@@ -97,8 +97,10 @@ CREATE TABLE IF NOT EXISTS "site_menus" (
   site_id UUID NOT NULL REFERENCES "sites"(id) ON DELETE CASCADE,
   key TEXT NOT NULL,
   label TEXT NOT NULL,
+  is_published BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE "site_menus" ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT TRUE;
 CREATE UNIQUE INDEX IF NOT EXISTS site_menus_site_id_key_key ON "site_menus" (site_id, key);
 CREATE TABLE IF NOT EXISTS "site_menu_items" (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
