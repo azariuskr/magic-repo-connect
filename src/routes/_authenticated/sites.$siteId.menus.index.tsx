@@ -240,15 +240,6 @@ function MenuEditor({
   function update(idx: number, patch: Partial<DraftItem>) {
     setItems((arr) => arr.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
-  function move(idx: number, dir: -1 | 1) {
-    setItems((arr) => {
-      const next = [...arr];
-      const target = idx + dir;
-      if (target < 0 || target >= next.length) return arr;
-      [next[idx], next[target]] = [next[target], next[idx]];
-      return next;
-    });
-  }
   function remove(idx: number) {
     setItems((arr) => arr.filter((_, i) => i !== idx));
   }
