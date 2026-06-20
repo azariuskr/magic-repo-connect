@@ -9,6 +9,8 @@ import {
   deleteMenu,
   listMenus,
   replaceMenuItems,
+  setMenuPublished,
+  setMenuSlot,
 } from "@/lib/menus.functions";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/menus/")({
