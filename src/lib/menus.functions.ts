@@ -225,7 +225,7 @@ export async function loadPublishedMenu(siteId: string, key: string): Promise<Pu
   const [menu] = await db
     .select()
     .from(siteMenus)
-    .where(and(eq(siteMenus.siteId, siteId), eq(siteMenus.key, key)))
+    .where(and(eq(siteMenus.siteId, siteId), eq(siteMenus.key, key), eq(siteMenus.isPublished, true)))
     .limit(1);
   if (!menu) return null;
   const items = await db
