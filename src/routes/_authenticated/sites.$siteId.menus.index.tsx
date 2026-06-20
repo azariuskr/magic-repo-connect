@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getSite } from "@/lib/sites.functions";
 import { listPages } from "@/lib/pages.functions";
 import {
@@ -12,6 +12,7 @@ import {
   setMenuPublished,
   setMenuSlot,
 } from "@/lib/menus.functions";
+import { themeToVars, type SiteTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/menus/")({
   component: MenusPage,
@@ -70,8 +71,37 @@ function MenusPage() {
   const menus = menusQuery.data ?? [];
   const pages = pagesQuery.data ?? [];
 
+  // Live drafts per menu — feeds the preview panel without requiring Save.
+  const [drafts, setDrafts] = useState<Record<string, DraftItem[]>>({});
+  const handleItemsChange = (menuId: string, items: DraftItem[]) =>
+    setDrafts((d) => ({ ...d, [menuId]: items }));
+
+  const primaryMenu = menus.find((m) => m.key === "primary" && m.isPublished);
+  const footerMenu = menus.find((m) => m.key === "footer" && m.isPublished);
+  const pagesById = useMemo(
+    () => Object.fromEntries(pages.map((p) => [p.id, p])),
+    [pages],
+  );
+
+  function draftFor(menu: (typeof menus)[number] | undefined) {
+    if (!menu) return [] as DraftItem[];
+    return (
+      drafts[menu.id] ??
+      menu.items.map((it) => ({
+        label: it.label,
+        type: (it.type as DraftItem["type"]) ?? "page",
+        pageId: it.pageId,
+        url: it.url,
+        anchor: it.anchor,
+        openInNewTab: it.openInNewTab,
+      }))
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0">
       <div className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
         <Link to="/dashboard" className="hover:underline">All sites</Link>
         <span>/</span>
@@ -163,6 +193,7 @@ function MenusPage() {
               key={menu.id}
               menu={menu}
               pages={pages}
+              onItemsChange={(items) => handleItemsChange(menu.id, items)}
               onSave={(items) =>
                 replaceFn({ data: { menuId: menu.id, items } }).then(() =>
                   qc.invalidateQueries({ queryKey: ["menus", siteId] }),
@@ -185,7 +216,191 @@ function MenusPage() {
           ))}
         </div>
       )}
+        </div>
+
+        <aside className="lg:sticky lg:top-6 lg:self-start">
+          <MenuPreview
+            siteName={site?.name ?? "Your site"}
+            siteSlug={site?.slug ?? ""}
+            theme={(site?.theme as SiteTheme | undefined) ?? undefined}
+            primaryItems={draftFor(primaryMenu)}
+            footerItems={draftFor(footerMenu)}
+            primaryAssigned={!!primaryMenu}
+            footerAssigned={!!footerMenu}
+            pagesById={pagesById}
+          />
+        </aside>
+      </div>
     </div>
+  );
+}
+
+function resolveDraftHref(
+  it: DraftItem,
+  pagesById: Record<string, { path: string }>,
+): string | null {
+  if (it.type === "page") {
+    if (!it.pageId) return null;
+    const page = pagesById[it.pageId];
+    return page ? page.path : null;
+  }
+  if (it.type === "url") return it.url || null;
+  if (it.type === "anchor") {
+    if (!it.anchor) return null;
+    return it.anchor.startsWith("#") ? it.anchor : `#${it.anchor}`;
+  }
+  return null;
+}
+
+function MenuPreview({
+  siteName,
+  siteSlug,
+  theme,
+  primaryItems,
+  footerItems,
+  primaryAssigned,
+  footerAssigned,
+  pagesById,
+}: {
+  siteName: string;
+  siteSlug: string;
+  theme: SiteTheme | undefined;
+  primaryItems: DraftItem[];
+  footerItems: DraftItem[];
+  primaryAssigned: boolean;
+  footerAssigned: boolean;
+  pagesById: Record<string, { path: string; title: string }>;
+}) {
+  const themeStyle = themeToVars(theme);
+  const publicHref = siteSlug ? `/s/${siteSlug}` : "#";
+
+  return (
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Live preview
+          </span>
+        </div>
+        {siteSlug ? (
+          <a
+            href={publicHref}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[11px] text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Open site ↗
+          </a>
+        ) : null}
+      </div>
+
+      <div className="space-y-0">
+        {/* Header */}
+        <div>
+          <div className="flex items-center justify-between px-4 pt-3 pb-1">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Header (primary)
+            </span>
+            {!primaryAssigned ? (
+              <span className="text-[10px] text-muted-foreground">No published menu</span>
+            ) : null}
+          </div>
+          <div style={themeStyle} className="border-y">
+            <div
+              className="flex items-center justify-between gap-3 px-4 py-3"
+              style={{
+                borderBottom: "1px solid color-mix(in srgb, var(--site-fg) 8%, transparent)",
+              }}
+            >
+              <span className="truncate text-[13px] font-semibold" style={{ color: "var(--site-fg)" }}>
+                {siteName}
+              </span>
+              <nav className="flex flex-wrap items-center justify-end gap-1">
+                {primaryItems.length === 0 ? (
+                  <span className="text-[11px]" style={{ color: "var(--site-muted)" }}>
+                    {primaryAssigned ? "Empty menu" : "—"}
+                  </span>
+                ) : (
+                  primaryItems.map((it, i) => (
+                    <PreviewLink key={i} it={it} pagesById={pagesById} />
+                  ))
+                )}
+              </nav>
+            </div>
+            <div
+              className="px-4 py-6 text-[11px]"
+              style={{ color: "var(--site-muted)" }}
+            >
+              Page content…
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div>
+          <div className="flex items-center justify-between px-4 pt-3 pb-1">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Footer
+            </span>
+            {!footerAssigned ? (
+              <span className="text-[10px] text-muted-foreground">No published menu</span>
+            ) : null}
+          </div>
+          <div style={themeStyle} className="border-t">
+            <div
+              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-[11px]"
+              style={{
+                borderTop: "1px solid color-mix(in srgb, var(--site-fg) 8%, transparent)",
+                color: "var(--site-muted)",
+              }}
+            >
+              <span>© {new Date().getFullYear()} {siteName}</span>
+              <nav className="flex flex-wrap gap-3">
+                {footerItems.length === 0 ? (
+                  <span>{footerAssigned ? "Empty menu" : "—"}</span>
+                ) : (
+                  footerItems.map((it, i) => (
+                    <PreviewLink key={i} it={it} pagesById={pagesById} subtle />
+                  ))
+                )}
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PreviewLink({
+  it,
+  pagesById,
+  subtle = false,
+}: {
+  it: DraftItem;
+  pagesById: Record<string, { path: string; title: string }>;
+  subtle?: boolean;
+}) {
+  const href = resolveDraftHref(it, pagesById);
+  const unresolved = !href;
+  return (
+    <span
+      className={
+        "inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] " +
+        (subtle ? "" : "")
+      }
+      style={{
+        color: unresolved ? "var(--site-muted)" : "var(--site-fg)",
+        backgroundColor: subtle
+          ? "transparent"
+          : "color-mix(in srgb, var(--site-fg) 6%, transparent)",
+        opacity: unresolved ? 0.6 : 1,
+      }}
+      title={href ?? "Unresolved link"}
+    >
+      <span className="truncate max-w-[10rem]">{it.label || "(no label)"}</span>
+      {unresolved ? <span aria-hidden>⚠</span> : null}
+    </span>
   );
 }
 
@@ -195,6 +410,7 @@ function MenuEditor({
   onSave,
   onSetSlot,
   onTogglePublished,
+  onItemsChange,
   onDelete,
 }: {
   menu: {
@@ -216,6 +432,7 @@ function MenuEditor({
   onSave: (items: DraftItem[]) => Promise<unknown>;
   onSetSlot: (slot: "primary" | "footer" | "none") => Promise<unknown>;
   onTogglePublished: (isPublished: boolean) => Promise<unknown>;
+  onItemsChange?: (items: DraftItem[]) => void;
   onDelete: () => void;
 }) {
   const [items, setItems] = useState<DraftItem[]>(() =>
@@ -236,6 +453,11 @@ function MenuEditor({
     const t = setTimeout(() => setSavedTick(0), 1500);
     return () => clearTimeout(t);
   }, [savedTick]);
+
+  useEffect(() => {
+    onItemsChange?.(items);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
 
   function update(idx: number, patch: Partial<DraftItem>) {
     setItems((arr) => arr.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
