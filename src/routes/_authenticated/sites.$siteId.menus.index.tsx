@@ -252,6 +252,20 @@ function MenuEditor({
   function remove(idx: number) {
     setItems((arr) => arr.filter((_, i) => i !== idx));
   }
+  function reorder(from: number, to: number) {
+    setItems((arr) => {
+      if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return arr;
+      const next = [...arr];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+
+  const slot: "primary" | "footer" | "none" =
+    menu.key === "primary" ? "primary" : menu.key === "footer" ? "footer" : "none";
   function addItem(type: DraftItem["type"]) {
     setItems((arr) => [
       ...arr,
