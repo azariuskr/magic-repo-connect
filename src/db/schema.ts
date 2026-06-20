@@ -139,6 +139,7 @@ export const siteMenus = pgTable(
     siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
     key: text("key").notNull(), // "primary" | "footer" | custom
     label: text("label").notNull(),
+    isPublished: boolean("is_published").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({

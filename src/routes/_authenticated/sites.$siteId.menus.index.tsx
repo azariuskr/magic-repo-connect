@@ -9,6 +9,8 @@ import {
   deleteMenu,
   listMenus,
   replaceMenuItems,
+  setMenuPublished,
+  setMenuSlot,
 } from "@/lib/menus.functions";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/menus/")({
@@ -34,6 +36,8 @@ function MenusPage() {
   const createMenuFn = useServerFn(createMenu);
   const deleteMenuFn = useServerFn(deleteMenu);
   const replaceFn = useServerFn(replaceMenuItems);
+  const setMenuSlotFn = useServerFn(setMenuSlot);
+  const setPublishedFn = useServerFn(setMenuPublished);
 
   const siteQuery = useQuery({
     queryKey: ["site", siteId],
@@ -164,6 +168,16 @@ function MenusPage() {
                   qc.invalidateQueries({ queryKey: ["menus", siteId] }),
                 )
               }
+              onSetSlot={(slot) =>
+                setMenuSlotFn({ data: { id: menu.id, slot } }).then(() =>
+                  qc.invalidateQueries({ queryKey: ["menus", siteId] }),
+                )
+              }
+              onTogglePublished={(isPublished) =>
+                setPublishedFn({ data: { id: menu.id, isPublished } }).then(() =>
+                  qc.invalidateQueries({ queryKey: ["menus", siteId] }),
+                )
+              }
               onDelete={() => {
                 if (confirm(`Delete menu "${menu.label}"?`)) deleteMut.mutate(menu.id);
               }}
@@ -179,12 +193,15 @@ function MenuEditor({
   menu,
   pages,
   onSave,
+  onSetSlot,
+  onTogglePublished,
   onDelete,
 }: {
   menu: {
     id: string;
     key: string;
     label: string;
+    isPublished: boolean;
     items: Array<{
       id: string;
       label: string;
@@ -197,6 +214,8 @@ function MenuEditor({
   };
   pages: Array<{ id: string; title: string; path: string }>;
   onSave: (items: DraftItem[]) => Promise<unknown>;
+  onSetSlot: (slot: "primary" | "footer" | "none") => Promise<unknown>;
+  onTogglePublished: (isPublished: boolean) => Promise<unknown>;
   onDelete: () => void;
 }) {
   const [items, setItems] = useState<DraftItem[]>(() =>
@@ -221,18 +240,23 @@ function MenuEditor({
   function update(idx: number, patch: Partial<DraftItem>) {
     setItems((arr) => arr.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
-  function move(idx: number, dir: -1 | 1) {
-    setItems((arr) => {
-      const next = [...arr];
-      const target = idx + dir;
-      if (target < 0 || target >= next.length) return arr;
-      [next[idx], next[target]] = [next[target], next[idx]];
-      return next;
-    });
-  }
   function remove(idx: number) {
     setItems((arr) => arr.filter((_, i) => i !== idx));
   }
+  function reorder(from: number, to: number) {
+    setItems((arr) => {
+      if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return arr;
+      const next = [...arr];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+
+  const slot: "primary" | "footer" | "none" =
+    menu.key === "primary" ? "primary" : menu.key === "footer" ? "footer" : "none";
   function addItem(type: DraftItem["type"]) {
     setItems((arr) => [
       ...arr,
@@ -249,15 +273,48 @@ function MenuEditor({
 
   return (
     <section className="overflow-hidden rounded-lg border bg-card">
-      <header className="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-3">
-        <div>
-          <h2 className="text-sm font-semibold">{menu.label}</h2>
-          <p className="font-mono text-xs text-muted-foreground">{menu.key}</p>
-        </div>
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/30 px-4 py-3">
         <div className="flex items-center gap-2">
-          {savedTick ? (
-            <span className="text-xs text-emerald-600">Saved</span>
+          <h2 className="text-sm font-semibold">{menu.label}</h2>
+          <span
+            className={
+              "rounded-full px-2 py-0.5 text-[10px] font-medium " +
+              (slot === "primary"
+                ? "bg-primary/15 text-primary"
+                : slot === "footer"
+                  ? "bg-amber-500/15 text-amber-600"
+                  : "bg-muted text-muted-foreground")
+            }
+          >
+            {slot === "none" ? "unassigned" : slot}
+          </span>
+          {!menu.isPublished ? (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              draft
+            </span>
           ) : null}
+          <span className="font-mono text-xs text-muted-foreground">· {menu.key}</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={slot}
+            onChange={(e) => onSetSlot(e.target.value as "primary" | "footer" | "none")}
+            className="rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+            aria-label="Assign slot"
+          >
+            <option value="none">Unassigned</option>
+            <option value="primary">Primary (header)</option>
+            <option value="footer">Footer</option>
+          </select>
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={menu.isPublished}
+              onChange={(e) => onTogglePublished(e.target.checked)}
+            />
+            Published
+          </label>
+          {savedTick ? <span className="text-xs text-emerald-600">Saved</span> : null}
           <button
             onClick={async () => {
               setSaving(true);
@@ -289,10 +346,52 @@ function MenuEditor({
           </p>
         ) : (
           items.map((it, idx) => (
-            <div key={idx} className="grid items-center gap-2 px-4 py-3 sm:grid-cols-[auto_1fr_1fr_2fr_auto]">
+            <div
+              key={idx}
+              draggable
+              onDragStart={(e) => {
+                setDragIdx(idx);
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", String(idx));
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOver !== idx) setDragOver(idx);
+              }}
+              onDragLeave={() => setDragOver((v) => (v === idx ? null : v))}
+              onDrop={(e) => {
+                e.preventDefault();
+                const from = dragIdx ?? Number(e.dataTransfer.getData("text/plain"));
+                if (!Number.isNaN(from)) reorder(from, idx);
+                setDragIdx(null);
+                setDragOver(null);
+              }}
+              onDragEnd={() => {
+                setDragIdx(null);
+                setDragOver(null);
+              }}
+              className={
+                "grid items-center gap-2 px-4 py-3 transition-colors sm:grid-cols-[auto_auto_1fr_1fr_2fr_auto] " +
+                (dragOver === idx && dragIdx !== idx ? "bg-primary/5 ring-1 ring-primary/40" : "") +
+                (dragIdx === idx ? " opacity-50" : "")
+              }
+            >
+              <button
+                type="button"
+                aria-label="Drag to reorder"
+                title="Drag to reorder"
+                className="cursor-grab select-none rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <circle cx="5" cy="3" r="1.3" /><circle cx="5" cy="8" r="1.3" /><circle cx="5" cy="13" r="1.3" />
+                  <circle cx="11" cy="3" r="1.3" /><circle cx="11" cy="8" r="1.3" /><circle cx="11" cy="13" r="1.3" />
+                </svg>
+              </button>
               <div className="flex flex-col">
                 <button
-                  onClick={() => move(idx, -1)}
+                  onClick={() => reorder(idx, idx - 1)}
                   disabled={idx === 0}
                   className="text-xs disabled:opacity-30"
                   aria-label="Move up"
@@ -300,7 +399,7 @@ function MenuEditor({
                   ▲
                 </button>
                 <button
-                  onClick={() => move(idx, 1)}
+                  onClick={() => reorder(idx, idx + 1)}
                   disabled={idx === items.length - 1}
                   className="text-xs disabled:opacity-30"
                   aria-label="Move down"
