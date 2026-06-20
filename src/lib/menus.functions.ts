@@ -113,6 +113,69 @@ export const deleteMenu = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const setMenuPublished = createServerFn({ method: "POST" })
+  .inputValidator((i) =>
+    z.object({ id: z.string().uuid(), isPublished: z.boolean() }).parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { ensureSchema } = await import("@/db/bootstrap.server");
+    const { db } = await import("@/db/client.server");
+    const { siteMenus } = await import("@/db/schema");
+    const { eq } = await import("drizzle-orm");
+    await ensureSchema();
+    await requireOwnedMenu(data.id);
+    await db.update(siteMenus).set({ isPublished: data.isPublished }).where(eq(siteMenus.id, data.id));
+    return { ok: true };
+  });
+
+// Assign a menu to the "primary" or "footer" slot (or detach with "none").
+// Slots are encoded in `key`; assigning swaps with any existing holder.
+export const setMenuSlot = createServerFn({ method: "POST" })
+  .inputValidator((i) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        slot: z.enum(["primary", "footer", "none"]),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { ensureSchema } = await import("@/db/bootstrap.server");
+    const { db } = await import("@/db/client.server");
+    const { siteMenus } = await import("@/db/schema");
+    const { and, eq, ne } = await import("drizzle-orm");
+    await ensureSchema();
+    const { menu } = await requireOwnedMenu(data.id);
+
+    const targetKey =
+      data.slot === "none" ? `menu-${menu.id.slice(0, 8)}` : data.slot;
+
+    if (targetKey === menu.key) return { ok: true };
+
+    // If another menu on the same site holds the target key, park it under a unique key.
+    if (data.slot !== "none") {
+      const [holder] = await db
+        .select()
+        .from(siteMenus)
+        .where(
+          and(
+            eq(siteMenus.siteId, menu.siteId),
+            eq(siteMenus.key, targetKey),
+            ne(siteMenus.id, menu.id),
+          ),
+        )
+        .limit(1);
+      if (holder) {
+        await db
+          .update(siteMenus)
+          .set({ key: `menu-${holder.id.slice(0, 8)}` })
+          .where(eq(siteMenus.id, holder.id));
+      }
+    }
+    await db.update(siteMenus).set({ key: targetKey }).where(eq(siteMenus.id, menu.id));
+    return { ok: true };
+  });
+
 export const replaceMenuItems = createServerFn({ method: "POST" })
   .inputValidator((i) =>
     z
