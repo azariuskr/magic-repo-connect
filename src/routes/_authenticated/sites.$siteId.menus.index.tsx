@@ -282,15 +282,48 @@ function MenuEditor({
 
   return (
     <section className="overflow-hidden rounded-lg border bg-card">
-      <header className="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-3">
-        <div>
-          <h2 className="text-sm font-semibold">{menu.label}</h2>
-          <p className="font-mono text-xs text-muted-foreground">{menu.key}</p>
-        </div>
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/30 px-4 py-3">
         <div className="flex items-center gap-2">
-          {savedTick ? (
-            <span className="text-xs text-emerald-600">Saved</span>
+          <h2 className="text-sm font-semibold">{menu.label}</h2>
+          <span
+            className={
+              "rounded-full px-2 py-0.5 text-[10px] font-medium " +
+              (slot === "primary"
+                ? "bg-primary/15 text-primary"
+                : slot === "footer"
+                  ? "bg-amber-500/15 text-amber-600"
+                  : "bg-muted text-muted-foreground")
+            }
+          >
+            {slot === "none" ? "unassigned" : slot}
+          </span>
+          {!menu.isPublished ? (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              draft
+            </span>
           ) : null}
+          <span className="font-mono text-xs text-muted-foreground">· {menu.key}</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={slot}
+            onChange={(e) => onSetSlot(e.target.value as "primary" | "footer" | "none")}
+            className="rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+            aria-label="Assign slot"
+          >
+            <option value="none">Unassigned</option>
+            <option value="primary">Primary (header)</option>
+            <option value="footer">Footer</option>
+          </select>
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={menu.isPublished}
+              onChange={(e) => onTogglePublished(e.target.checked)}
+            />
+            Published
+          </label>
+          {savedTick ? <span className="text-xs text-emerald-600">Saved</span> : null}
           <button
             onClick={async () => {
               setSaving(true);
