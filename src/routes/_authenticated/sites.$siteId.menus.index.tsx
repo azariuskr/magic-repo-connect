@@ -71,7 +71,32 @@ function MenusPage() {
   const menus = menusQuery.data ?? [];
   const pages = pagesQuery.data ?? [];
 
-  return (
+  // Live drafts per menu — feeds the preview panel without requiring Save.
+  const [drafts, setDrafts] = useState<Record<string, DraftItem[]>>({});
+  const handleItemsChange = (menuId: string, items: DraftItem[]) =>
+    setDrafts((d) => ({ ...d, [menuId]: items }));
+
+  const primaryMenu = menus.find((m) => m.key === "primary" && m.isPublished);
+  const footerMenu = menus.find((m) => m.key === "footer" && m.isPublished);
+  const pagesById = useMemo(
+    () => Object.fromEntries(pages.map((p) => [p.id, p])),
+    [pages],
+  );
+
+  function draftFor(menu: (typeof menus)[number] | undefined) {
+    if (!menu) return [] as DraftItem[];
+    return (
+      drafts[menu.id] ??
+      menu.items.map((it) => ({
+        label: it.label,
+        type: (it.type as DraftItem["type"]) ?? "page",
+        pageId: it.pageId,
+        url: it.url,
+        anchor: it.anchor,
+        openInNewTab: it.openInNewTab,
+      }))
+    );
+  }
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
         <Link to="/dashboard" className="hover:underline">All sites</Link>
