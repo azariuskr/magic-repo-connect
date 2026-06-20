@@ -166,6 +166,16 @@ function MenusPage() {
                   qc.invalidateQueries({ queryKey: ["menus", siteId] }),
                 )
               }
+              onSetSlot={(slot) =>
+                setMenuSlotFn({ data: { id: menu.id, slot } }).then(() =>
+                  qc.invalidateQueries({ queryKey: ["menus", siteId] }),
+                )
+              }
+              onTogglePublished={(isPublished) =>
+                setPublishedFn({ data: { id: menu.id, isPublished } }).then(() =>
+                  qc.invalidateQueries({ queryKey: ["menus", siteId] }),
+                )
+              }
               onDelete={() => {
                 if (confirm(`Delete menu "${menu.label}"?`)) deleteMut.mutate(menu.id);
               }}
