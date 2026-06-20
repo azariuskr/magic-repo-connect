@@ -355,10 +355,52 @@ function MenuEditor({
           </p>
         ) : (
           items.map((it, idx) => (
-            <div key={idx} className="grid items-center gap-2 px-4 py-3 sm:grid-cols-[auto_1fr_1fr_2fr_auto]">
+            <div
+              key={idx}
+              draggable
+              onDragStart={(e) => {
+                setDragIdx(idx);
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", String(idx));
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOver !== idx) setDragOver(idx);
+              }}
+              onDragLeave={() => setDragOver((v) => (v === idx ? null : v))}
+              onDrop={(e) => {
+                e.preventDefault();
+                const from = dragIdx ?? Number(e.dataTransfer.getData("text/plain"));
+                if (!Number.isNaN(from)) reorder(from, idx);
+                setDragIdx(null);
+                setDragOver(null);
+              }}
+              onDragEnd={() => {
+                setDragIdx(null);
+                setDragOver(null);
+              }}
+              className={
+                "grid items-center gap-2 px-4 py-3 transition-colors sm:grid-cols-[auto_auto_1fr_1fr_2fr_auto] " +
+                (dragOver === idx && dragIdx !== idx ? "bg-primary/5 ring-1 ring-primary/40" : "") +
+                (dragIdx === idx ? " opacity-50" : "")
+              }
+            >
+              <button
+                type="button"
+                aria-label="Drag to reorder"
+                title="Drag to reorder"
+                className="cursor-grab select-none rounded p-1 text-muted-foreground hover:bg-muted active:cursor-grabbing"
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <circle cx="5" cy="3" r="1.3" /><circle cx="5" cy="8" r="1.3" /><circle cx="5" cy="13" r="1.3" />
+                  <circle cx="11" cy="3" r="1.3" /><circle cx="11" cy="8" r="1.3" /><circle cx="11" cy="13" r="1.3" />
+                </svg>
+              </button>
               <div className="flex flex-col">
                 <button
-                  onClick={() => move(idx, -1)}
+                  onClick={() => reorder(idx, idx - 1)}
                   disabled={idx === 0}
                   className="text-xs disabled:opacity-30"
                   aria-label="Move up"
@@ -366,7 +408,7 @@ function MenuEditor({
                   ▲
                 </button>
                 <button
-                  onClick={() => move(idx, 1)}
+                  onClick={() => reorder(idx, idx + 1)}
                   disabled={idx === items.length - 1}
                   className="text-xs disabled:opacity-30"
                   aria-label="Move down"
