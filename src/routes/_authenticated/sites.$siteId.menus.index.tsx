@@ -97,7 +97,11 @@ function MenusPage() {
       }))
     );
   }
-    <div className="mx-auto max-w-5xl px-6 py-10">
+
+  return (
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0">
       <div className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
         <Link to="/dashboard" className="hover:underline">All sites</Link>
         <span>/</span>
