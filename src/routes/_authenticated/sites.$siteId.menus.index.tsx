@@ -36,6 +36,8 @@ function MenusPage() {
   const createMenuFn = useServerFn(createMenu);
   const deleteMenuFn = useServerFn(deleteMenu);
   const replaceFn = useServerFn(replaceMenuItems);
+  const setMenuSlotFn = useServerFn(setMenuSlot);
+  const setPublishedFn = useServerFn(setMenuPublished);
 
   const siteQuery = useQuery({
     queryKey: ["site", siteId],
