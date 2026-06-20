@@ -454,6 +454,11 @@ function MenuEditor({
     return () => clearTimeout(t);
   }, [savedTick]);
 
+  useEffect(() => {
+    onItemsChange?.(items);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
+
   function update(idx: number, patch: Partial<DraftItem>) {
     setItems((arr) => arr.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
