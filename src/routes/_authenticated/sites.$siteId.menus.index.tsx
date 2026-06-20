@@ -410,6 +410,7 @@ function MenuEditor({
   onSave,
   onSetSlot,
   onTogglePublished,
+  onItemsChange,
   onDelete,
 }: {
   menu: {
@@ -431,6 +432,7 @@ function MenuEditor({
   onSave: (items: DraftItem[]) => Promise<unknown>;
   onSetSlot: (slot: "primary" | "footer" | "none") => Promise<unknown>;
   onTogglePublished: (isPublished: boolean) => Promise<unknown>;
+  onItemsChange?: (items: DraftItem[]) => void;
   onDelete: () => void;
 }) {
   const [items, setItems] = useState<DraftItem[]>(() =>
