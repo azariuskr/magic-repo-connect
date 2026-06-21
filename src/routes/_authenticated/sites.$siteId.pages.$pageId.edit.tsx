@@ -363,3 +363,89 @@ function ColorField({
     </label>
   );
 }
+
+type VersionRow = {
+  id: string;
+  versionNumber: number;
+  label: string | null;
+  source: string;
+  title: string;
+  createdAt: Date | string;
+  createdBy: string | null;
+};
+
+function VersionsPanel({
+  versions,
+  loading,
+  reverting,
+  currentPublishedAt,
+  onRevert,
+  onClose,
+}: {
+  versions: VersionRow[];
+  loading: boolean;
+  reverting: boolean;
+  currentPublishedAt: Date | null;
+  onRevert: (versionId: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="absolute right-4 top-4 z-50 flex max-h-[80vh] w-96 flex-col rounded-lg border bg-card shadow-lg">
+      <div className="flex items-center justify-between border-b px-4 py-2">
+        <div>
+          <h3 className="text-sm font-semibold">Page versions</h3>
+          {currentPublishedAt && (
+            <p className="text-[10px] text-muted-foreground">
+              Last published {new Date(currentPublishedAt).toLocaleString()}
+            </p>
+          )}
+        </div>
+        <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground">
+          Close
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2">
+        {loading ? (
+          <p className="px-2 py-4 text-xs text-muted-foreground">Loading…</p>
+        ) : versions.length === 0 ? (
+          <p className="px-2 py-4 text-xs text-muted-foreground">
+            No versions yet. Publish the page to create your first snapshot.
+          </p>
+        ) : (
+          <ul className="space-y-1">
+            {versions.map((v, idx) => (
+              <li
+                key={v.id}
+                className="flex items-center justify-between rounded-md border border-transparent px-2 py-2 hover:border-border hover:bg-accent/50"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold">v{v.versionNumber}</span>
+                    {idx === 0 && (
+                      <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600">
+                        current
+                      </span>
+                    )}
+                    <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] capitalize text-muted-foreground">
+                      {v.source}
+                    </span>
+                  </div>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {v.label ?? new Date(v.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onRevert(v.id)}
+                  disabled={reverting || idx === 0}
+                  className="rounded-md border px-2 py-1 text-[11px] font-medium hover:bg-accent disabled:opacity-40"
+                >
+                  {idx === 0 ? "Current" : "Revert"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
