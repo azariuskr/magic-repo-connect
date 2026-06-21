@@ -238,6 +238,20 @@ function EditPage() {
             onClose={() => setShowTheme(false)}
           />
         )}
+        {showVersions && (
+          <VersionsPanel
+            versions={versionsQuery.data ?? []}
+            loading={versionsQuery.isLoading}
+            reverting={revertMut.isPending}
+            currentPublishedAt={page.publishedAt as Date | null}
+            onRevert={(versionId) => {
+              if (confirm("Revert this page to the selected version? Current content will be replaced.")) {
+                revertMut.mutate(versionId);
+              }
+            }}
+            onClose={() => setShowVersions(false)}
+          />
+        )}
       </div>
     </div>
   );
