@@ -1,10 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Puck, type Data } from "@measured/puck";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getSite, saveSite } from "@/lib/sites.functions";
-import { getPage, listPages, publishPage, savePage } from "@/lib/pages.functions";
+import {
+  getPage,
+  listPages,
+  listPageVersions,
+  publishPage,
+  revertPageVersion,
+  savePage,
+} from "@/lib/pages.functions";
 import { buildPuckConfig } from "@/lib/blocks";
 import { DEFAULT_THEME, PRESETS, type SiteTheme } from "@/lib/theme";
 
