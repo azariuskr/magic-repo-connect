@@ -28,6 +28,7 @@ export const Route = createFileRoute("/_authenticated/sites/$siteId/pages/$pageI
 function EditPage() {
   const { siteId, pageId } = Route.useParams();
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const getPageFn = useServerFn(getPage);
   const getSiteFn = useServerFn(getSite);
@@ -35,6 +36,8 @@ function EditPage() {
   const savePageFn = useServerFn(savePage);
   const saveSiteFn = useServerFn(saveSite);
   const publishFn = useServerFn(publishPage);
+  const listVersionsFn = useServerFn(listPageVersions);
+  const revertFn = useServerFn(revertPageVersion);
 
   const pageQuery = useQuery({
     queryKey: ["page", pageId],
@@ -47,6 +50,12 @@ function EditPage() {
   const pagesQuery = useQuery({
     queryKey: ["pages", siteId],
     queryFn: () => listPagesFn({ data: { siteId } }),
+  });
+  const [showVersions, setShowVersions] = useState(false);
+  const versionsQuery = useQuery({
+    queryKey: ["page-versions", pageId],
+    queryFn: () => listVersionsFn({ data: { pageId } }),
+    enabled: showVersions,
   });
 
   const saveMut = useMutation({
@@ -61,6 +70,14 @@ function EditPage() {
     onSuccess: () => {
       pageQuery.refetch();
       qc.invalidateQueries({ queryKey: ["pages", siteId] });
+      qc.invalidateQueries({ queryKey: ["page-versions", pageId] });
+    },
+  });
+  const revertMut = useMutation({
+    mutationFn: (versionId: string) => revertFn({ data: { pageId, versionId } }),
+    onSuccess: () => {
+      pageQuery.refetch();
+      qc.invalidateQueries({ queryKey: ["page-versions", pageId] });
     },
   });
 
