@@ -232,13 +232,18 @@ function MenusPage() {
       )}
         </div>
 
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        <aside className="lg:sticky lg:top-6 lg:self-start space-y-3">
+          <ThemePicker
+            value={previewPreset}
+            onChange={setPreviewPreset}
+            sitePresetName={siteTheme?.preset}
+          />
           <MenuPreview
             siteName={site?.name ?? "Your site"}
             siteSlug={site?.slug ?? ""}
-            theme={(site?.theme as SiteTheme | undefined) ?? undefined}
-            primaryItems={draftFor(primaryMenu)}
-            footerItems={draftFor(footerMenu)}
+            theme={previewTheme}
+            primaryItems={primaryDraft}
+            footerItems={footerDraft}
             primaryAssigned={!!primaryMenu}
             footerAssigned={!!footerMenu}
             pagesById={pagesById}
