@@ -196,10 +196,10 @@ export const publishPage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { ensureSchema } = await import("@/db/bootstrap.server");
     const { db } = await import("@/db/client.server");
-    const { sitePages } = await import("@/db/schema");
+    const { sitePages, pageVersions } = await import("@/db/schema");
     const { eq, sql } = await import("drizzle-orm");
     await ensureSchema();
-    await requireOwnedPage(data.id);
+    const { user, page } = await requireOwnedPage(data.id);
     const [row] = await db
       .update(sitePages)
       .set({
@@ -209,6 +209,92 @@ export const publishPage = createServerFn({ method: "POST" })
       })
       .where(eq(sitePages.id, data.id))
       .returning();
+    // Snapshot a version
+    const [{ next }] = await db
+      .select({ next: sql<number>`COALESCE(MAX(${pageVersions.versionNumber}), 0) + 1` })
+      .from(pageVersions)
+      .where(eq(pageVersions.pageId, data.id));
+    await db.insert(pageVersions).values({
+      pageId: row.id,
+      siteId: row.siteId,
+      versionNumber: next ?? 1,
+      source: "publish",
+      title: row.title,
+      path: row.path,
+      puckData: row.puckData as never,
+      createdBy: user.id,
+    });
+    return row;
+  });
+
+export const listPageVersions = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ pageId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { ensureSchema } = await import("@/db/bootstrap.server");
+    const { db } = await import("@/db/client.server");
+    const { pageVersions } = await import("@/db/schema");
+    const { eq, desc } = await import("drizzle-orm");
+    await ensureSchema();
+    await requireOwnedPage(data.pageId);
+    return db
+      .select({
+        id: pageVersions.id,
+        versionNumber: pageVersions.versionNumber,
+        label: pageVersions.label,
+        source: pageVersions.source,
+        title: pageVersions.title,
+        createdAt: pageVersions.createdAt,
+        createdBy: pageVersions.createdBy,
+      })
+      .from(pageVersions)
+      .where(eq(pageVersions.pageId, data.pageId))
+      .orderBy(desc(pageVersions.versionNumber))
+      .limit(50);
+  });
+
+export const revertPageVersion = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z.object({ pageId: z.string().uuid(), versionId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { ensureSchema } = await import("@/db/bootstrap.server");
+    const { db } = await import("@/db/client.server");
+    const { sitePages, pageVersions } = await import("@/db/schema");
+    const { eq, and, sql } = await import("drizzle-orm");
+    await ensureSchema();
+    const { user, page } = await requireOwnedPage(data.pageId);
+    const [version] = await db
+      .select()
+      .from(pageVersions)
+      .where(and(eq(pageVersions.id, data.versionId), eq(pageVersions.pageId, data.pageId)))
+      .limit(1);
+    if (!version) throw new Error("Version not found");
+    const [row] = await db
+      .update(sitePages)
+      .set({
+        puckData: version.puckData as never,
+        publishedData: version.puckData as never,
+        publishedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(sitePages.id, data.pageId))
+      .returning();
+    // Snapshot the revert as a new version for traceability
+    const [{ next }] = await db
+      .select({ next: sql<number>`COALESCE(MAX(${pageVersions.versionNumber}), 0) + 1` })
+      .from(pageVersions)
+      .where(eq(pageVersions.pageId, data.pageId));
+    await db.insert(pageVersions).values({
+      pageId: data.pageId,
+      siteId: page.siteId,
+      versionNumber: next ?? 1,
+      source: "revert",
+      label: `Reverted to v${version.versionNumber}`,
+      title: row.title,
+      path: row.path,
+      puckData: row.puckData as never,
+      createdBy: user.id,
+    });
     return row;
   });
 
