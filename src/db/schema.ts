@@ -121,6 +121,26 @@ export const sitePages = pgTable(
   }),
 );
 
+export const pageVersions = pgTable(
+  "page_versions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    pageId: uuid("page_id").notNull().references(() => sitePages.id, { onDelete: "cascade" }),
+    siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
+    versionNumber: integer("version_number").notNull(),
+    label: text("label"),
+    source: text("source").notNull().default("publish"), // publish | manual | revert | autosave
+    title: text("title").notNull(),
+    path: text("path").notNull(),
+    puckData: jsonb("puck_data").$type<PuckData>().notNull(),
+    createdBy: text("created_by"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    pageIdx: index("page_versions_page_idx").on(t.pageId, t.versionNumber),
+  }),
+);
+
 export const siteSubmissions = pgTable("site_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
   siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
