@@ -452,9 +452,9 @@ const MenuPreview = memo(function MenuPreview({
       </div>
     </div>
   );
-}
+});
 
-function PreviewLink({
+const PreviewLink = memo(function PreviewLink({
   it,
   pagesById,
   subtle = false,
@@ -484,7 +484,7 @@ function PreviewLink({
       {unresolved ? <span aria-hidden>⚠</span> : null}
     </span>
   );
-}
+});
 
 function MenuEditor({
   menu,
