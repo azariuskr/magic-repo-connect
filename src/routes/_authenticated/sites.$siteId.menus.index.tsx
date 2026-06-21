@@ -254,6 +254,36 @@ function MenusPage() {
   );
 }
 
+function resolveDraft(
+  menu:
+    | {
+        id: string;
+        items: Array<{
+          label: string;
+          type: string;
+          pageId: string | null;
+          url: string | null;
+          anchor: string | null;
+          openInNewTab: boolean;
+        }>;
+      }
+    | undefined,
+  drafts: Record<string, DraftItem[]>,
+): DraftItem[] {
+  if (!menu) return EMPTY_DRAFTS;
+  const d = drafts[menu.id];
+  if (d) return d;
+  return menu.items.map((it) => ({
+    label: it.label,
+    type: (it.type as DraftItem["type"]) ?? "page",
+    pageId: it.pageId,
+    url: it.url,
+    anchor: it.anchor,
+    openInNewTab: it.openInNewTab,
+  }));
+}
+const EMPTY_DRAFTS: DraftItem[] = [];
+
 function resolveDraftHref(
   it: DraftItem,
   pagesById: Record<string, { path: string }>,
@@ -271,7 +301,40 @@ function resolveDraftHref(
   return null;
 }
 
-function MenuPreview({
+const ThemePicker = memo(function ThemePicker({
+  value,
+  onChange,
+  sitePresetName,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  sitePresetName?: string;
+}) {
+  const presetKeys = Object.keys(PRESETS);
+  return (
+    <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 shadow-sm">
+      <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        Theme
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+      >
+        <option value="__site">
+          Site default{sitePresetName ? ` (${sitePresetName})` : ""}
+        </option>
+        {presetKeys.map((k) => (
+          <option key={k} value={k}>
+            {k}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+});
+
+const MenuPreview = memo(function MenuPreview({
   siteName,
   siteSlug,
   theme,
