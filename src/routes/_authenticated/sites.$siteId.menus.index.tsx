@@ -73,8 +73,19 @@ function MenusPage() {
 
   // Live drafts per menu — feeds the preview panel without requiring Save.
   const [drafts, setDrafts] = useState<Record<string, DraftItem[]>>({});
-  const handleItemsChange = (menuId: string, items: DraftItem[]) =>
-    setDrafts((d) => ({ ...d, [menuId]: items }));
+  // Stable per-menu callback factory so child editors don't re-render on parent state changes.
+  const itemsChangeHandlers = useMemo(() => new Map<string, (items: DraftItem[]) => void>(), []);
+  const getItemsChangeHandler = useCallback(
+    (menuId: string) => {
+      let h = itemsChangeHandlers.get(menuId);
+      if (!h) {
+        h = (items: DraftItem[]) => setDrafts((d) => ({ ...d, [menuId]: items }));
+        itemsChangeHandlers.set(menuId, h);
+      }
+      return h;
+    },
+    [itemsChangeHandlers],
+  );
 
   const primaryMenu = menus.find((m) => m.key === "primary" && m.isPublished);
   const footerMenu = menus.find((m) => m.key === "footer" && m.isPublished);
@@ -83,20 +94,23 @@ function MenusPage() {
     [pages],
   );
 
-  function draftFor(menu: (typeof menus)[number] | undefined) {
-    if (!menu) return [] as DraftItem[];
-    return (
-      drafts[menu.id] ??
-      menu.items.map((it) => ({
-        label: it.label,
-        type: (it.type as DraftItem["type"]) ?? "page",
-        pageId: it.pageId,
-        url: it.url,
-        anchor: it.anchor,
-        openInNewTab: it.openInNewTab,
-      }))
-    );
-  }
+  const primaryDraft = useMemo(
+    () => resolveDraft(primaryMenu, drafts),
+    [primaryMenu, drafts],
+  );
+  const footerDraft = useMemo(
+    () => resolveDraft(footerMenu, drafts),
+    [footerMenu, drafts],
+  );
+
+  // Preview theme override — defaults to the site's own theme.
+  const siteTheme = (site?.theme as SiteTheme | undefined) ?? undefined;
+  const [previewPreset, setPreviewPreset] = useState<string>("__site");
+  const previewTheme: SiteTheme | undefined = useMemo(() => {
+    if (previewPreset === "__site") return siteTheme;
+    const tokens = PRESETS[previewPreset];
+    return tokens ? { preset: previewPreset, tokens } : siteTheme;
+  }, [previewPreset, siteTheme]);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
