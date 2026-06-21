@@ -12,7 +12,7 @@ import {
   setMenuPublished,
   setMenuSlot,
 } from "@/lib/menus.functions";
-import { PRESETS, themeToVars, type SiteTheme, type ThemeTokens } from "@/lib/theme";
+import { PRESETS, themeToVars, type SiteTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/menus/")({
   component: MenusPage,
