@@ -1,10 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Puck, type Data } from "@measured/puck";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getSite, saveSite } from "@/lib/sites.functions";
-import { getPage, listPages, publishPage, savePage } from "@/lib/pages.functions";
+import {
+  getPage,
+  listPages,
+  listPageVersions,
+  publishPage,
+  revertPageVersion,
+  savePage,
+} from "@/lib/pages.functions";
 import { buildPuckConfig } from "@/lib/blocks";
 import { DEFAULT_THEME, PRESETS, type SiteTheme } from "@/lib/theme";
 
@@ -21,6 +28,7 @@ export const Route = createFileRoute("/_authenticated/sites/$siteId/pages/$pageI
 function EditPage() {
   const { siteId, pageId } = Route.useParams();
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const getPageFn = useServerFn(getPage);
   const getSiteFn = useServerFn(getSite);
@@ -28,6 +36,8 @@ function EditPage() {
   const savePageFn = useServerFn(savePage);
   const saveSiteFn = useServerFn(saveSite);
   const publishFn = useServerFn(publishPage);
+  const listVersionsFn = useServerFn(listPageVersions);
+  const revertFn = useServerFn(revertPageVersion);
 
   const pageQuery = useQuery({
     queryKey: ["page", pageId],
@@ -40,6 +50,12 @@ function EditPage() {
   const pagesQuery = useQuery({
     queryKey: ["pages", siteId],
     queryFn: () => listPagesFn({ data: { siteId } }),
+  });
+  const [showVersions, setShowVersions] = useState(false);
+  const versionsQuery = useQuery({
+    queryKey: ["page-versions", pageId],
+    queryFn: () => listVersionsFn({ data: { pageId } }),
+    enabled: showVersions,
   });
 
   const saveMut = useMutation({
@@ -54,6 +70,14 @@ function EditPage() {
     onSuccess: () => {
       pageQuery.refetch();
       qc.invalidateQueries({ queryKey: ["pages", siteId] });
+      qc.invalidateQueries({ queryKey: ["page-versions", pageId] });
+    },
+  });
+  const revertMut = useMutation({
+    mutationFn: (versionId: string) => revertFn({ data: { pageId, versionId } }),
+    onSuccess: () => {
+      pageQuery.refetch();
+      qc.invalidateQueries({ queryKey: ["page-versions", pageId] });
     },
   });
 
@@ -125,7 +149,15 @@ function EditPage() {
           <select
             value={pageId}
             onChange={(e) => {
-              window.location.href = `/sites/${siteId}/pages/${e.target.value}/edit`;
+              const next = e.target.value;
+              if (next === "__new__") {
+                navigate({ to: "/sites/$siteId/pages", params: { siteId } });
+                return;
+              }
+              navigate({
+                to: "/sites/$siteId/pages/$pageId/edit",
+                params: { siteId, pageId: next },
+              });
             }}
             className="rounded-md border bg-background px-2 py-1 text-xs"
           >
@@ -135,6 +167,7 @@ function EditPage() {
                 {p.isHome ? " (home)" : ""}
               </option>
             ))}
+            <option value="__new__">+ Manage pages…</option>
           </select>
           <span className="hidden truncate rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
             {page.path}
@@ -152,6 +185,14 @@ function EditPage() {
               Saved
             </span>
           ) : null}
+          <button
+            onClick={() => setShowVersions((v) => !v)}
+            className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+              showVersions ? "border-primary bg-primary/10 text-primary" : "hover:bg-accent"
+            }`}
+          >
+            🕘 Versions
+          </button>
           <button
             onClick={() => setShowTheme((v) => !v)}
             className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -195,6 +236,20 @@ function EditPage() {
               scheduleThemeSave(next);
             }}
             onClose={() => setShowTheme(false)}
+          />
+        )}
+        {showVersions && (
+          <VersionsPanel
+            versions={versionsQuery.data ?? []}
+            loading={versionsQuery.isLoading}
+            reverting={revertMut.isPending}
+            currentPublishedAt={page.publishedAt as Date | null}
+            onRevert={(versionId) => {
+              if (confirm("Revert this page to the selected version? Current content will be replaced.")) {
+                revertMut.mutate(versionId);
+              }
+            }}
+            onClose={() => setShowVersions(false)}
           />
         )}
       </div>
@@ -306,5 +361,91 @@ function ColorField({
         />
       </div>
     </label>
+  );
+}
+
+type VersionRow = {
+  id: string;
+  versionNumber: number;
+  label: string | null;
+  source: string;
+  title: string;
+  createdAt: Date | string;
+  createdBy: string | null;
+};
+
+function VersionsPanel({
+  versions,
+  loading,
+  reverting,
+  currentPublishedAt,
+  onRevert,
+  onClose,
+}: {
+  versions: VersionRow[];
+  loading: boolean;
+  reverting: boolean;
+  currentPublishedAt: Date | null;
+  onRevert: (versionId: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="absolute right-4 top-4 z-50 flex max-h-[80vh] w-96 flex-col rounded-lg border bg-card shadow-lg">
+      <div className="flex items-center justify-between border-b px-4 py-2">
+        <div>
+          <h3 className="text-sm font-semibold">Page versions</h3>
+          {currentPublishedAt && (
+            <p className="text-[10px] text-muted-foreground">
+              Last published {new Date(currentPublishedAt).toLocaleString()}
+            </p>
+          )}
+        </div>
+        <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground">
+          Close
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2">
+        {loading ? (
+          <p className="px-2 py-4 text-xs text-muted-foreground">Loading…</p>
+        ) : versions.length === 0 ? (
+          <p className="px-2 py-4 text-xs text-muted-foreground">
+            No versions yet. Publish the page to create your first snapshot.
+          </p>
+        ) : (
+          <ul className="space-y-1">
+            {versions.map((v, idx) => (
+              <li
+                key={v.id}
+                className="flex items-center justify-between rounded-md border border-transparent px-2 py-2 hover:border-border hover:bg-accent/50"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold">v{v.versionNumber}</span>
+                    {idx === 0 && (
+                      <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600">
+                        current
+                      </span>
+                    )}
+                    <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] capitalize text-muted-foreground">
+                      {v.source}
+                    </span>
+                  </div>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {v.label ?? new Date(v.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onRevert(v.id)}
+                  disabled={reverting || idx === 0}
+                  className="rounded-md border px-2 py-1 text-[11px] font-medium hover:bg-accent disabled:opacity-40"
+                >
+                  {idx === 0 ? "Current" : "Revert"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }

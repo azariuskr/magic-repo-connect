@@ -82,6 +82,20 @@ CREATE TABLE IF NOT EXISTS "site_pages" (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS site_pages_site_id_path_key ON "site_pages" (site_id, path);
+CREATE TABLE IF NOT EXISTS "page_versions" (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  page_id UUID NOT NULL REFERENCES "site_pages"(id) ON DELETE CASCADE,
+  site_id UUID NOT NULL REFERENCES "sites"(id) ON DELETE CASCADE,
+  version_number INTEGER NOT NULL,
+  label TEXT,
+  source TEXT NOT NULL DEFAULT 'publish',
+  title TEXT NOT NULL,
+  path TEXT NOT NULL,
+  puck_data JSONB NOT NULL,
+  created_by TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS page_versions_page_idx ON "page_versions" (page_id, version_number);
 CREATE TABLE IF NOT EXISTS "site_submissions" (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id UUID NOT NULL REFERENCES "sites"(id) ON DELETE CASCADE,
