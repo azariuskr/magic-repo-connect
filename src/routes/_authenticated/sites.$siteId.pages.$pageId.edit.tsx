@@ -186,6 +186,14 @@ function EditPage() {
             </span>
           ) : null}
           <button
+            onClick={() => setShowVersions((v) => !v)}
+            className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+              showVersions ? "border-primary bg-primary/10 text-primary" : "hover:bg-accent"
+            }`}
+          >
+            🕘 Versions
+          </button>
+          <button
             onClick={() => setShowTheme((v) => !v)}
             className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
               showTheme ? "border-primary bg-primary/10 text-primary" : "hover:bg-accent"
