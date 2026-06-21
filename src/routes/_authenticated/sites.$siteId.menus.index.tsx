@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { getSite } from "@/lib/sites.functions";
 import { listPages } from "@/lib/pages.functions";
 import {
@@ -12,7 +12,7 @@ import {
   setMenuPublished,
   setMenuSlot,
 } from "@/lib/menus.functions";
-import { themeToVars, type SiteTheme } from "@/lib/theme";
+import { PRESETS, themeToVars, type SiteTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated/sites/$siteId/menus/")({
   component: MenusPage,
@@ -73,8 +73,19 @@ function MenusPage() {
 
   // Live drafts per menu — feeds the preview panel without requiring Save.
   const [drafts, setDrafts] = useState<Record<string, DraftItem[]>>({});
-  const handleItemsChange = (menuId: string, items: DraftItem[]) =>
-    setDrafts((d) => ({ ...d, [menuId]: items }));
+  // Stable per-menu callback factory so child editors don't re-render on parent state changes.
+  const itemsChangeHandlers = useMemo(() => new Map<string, (items: DraftItem[]) => void>(), []);
+  const getItemsChangeHandler = useCallback(
+    (menuId: string) => {
+      let h = itemsChangeHandlers.get(menuId);
+      if (!h) {
+        h = (items: DraftItem[]) => setDrafts((d) => ({ ...d, [menuId]: items }));
+        itemsChangeHandlers.set(menuId, h);
+      }
+      return h;
+    },
+    [itemsChangeHandlers],
+  );
 
   const primaryMenu = menus.find((m) => m.key === "primary" && m.isPublished);
   const footerMenu = menus.find((m) => m.key === "footer" && m.isPublished);
@@ -83,20 +94,23 @@ function MenusPage() {
     [pages],
   );
 
-  function draftFor(menu: (typeof menus)[number] | undefined) {
-    if (!menu) return [] as DraftItem[];
-    return (
-      drafts[menu.id] ??
-      menu.items.map((it) => ({
-        label: it.label,
-        type: (it.type as DraftItem["type"]) ?? "page",
-        pageId: it.pageId,
-        url: it.url,
-        anchor: it.anchor,
-        openInNewTab: it.openInNewTab,
-      }))
-    );
-  }
+  const primaryDraft = useMemo(
+    () => resolveDraft(primaryMenu, drafts),
+    [primaryMenu, drafts],
+  );
+  const footerDraft = useMemo(
+    () => resolveDraft(footerMenu, drafts),
+    [footerMenu, drafts],
+  );
+
+  // Preview theme override — defaults to the site's own theme.
+  const siteTheme = (site?.theme as SiteTheme | undefined) ?? undefined;
+  const [previewPreset, setPreviewPreset] = useState<string>("__site");
+  const previewTheme: SiteTheme | undefined = useMemo(() => {
+    if (previewPreset === "__site") return siteTheme;
+    const tokens = PRESETS[previewPreset];
+    return tokens ? { preset: previewPreset, tokens } : siteTheme;
+  }, [previewPreset, siteTheme]);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -193,7 +207,7 @@ function MenusPage() {
               key={menu.id}
               menu={menu}
               pages={pages}
-              onItemsChange={(items) => handleItemsChange(menu.id, items)}
+              onItemsChange={getItemsChangeHandler(menu.id)}
               onSave={(items) =>
                 replaceFn({ data: { menuId: menu.id, items } }).then(() =>
                   qc.invalidateQueries({ queryKey: ["menus", siteId] }),
@@ -218,13 +232,18 @@ function MenusPage() {
       )}
         </div>
 
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        <aside className="lg:sticky lg:top-6 lg:self-start space-y-3">
+          <ThemePicker
+            value={previewPreset}
+            onChange={setPreviewPreset}
+            sitePresetName={siteTheme?.preset}
+          />
           <MenuPreview
             siteName={site?.name ?? "Your site"}
             siteSlug={site?.slug ?? ""}
-            theme={(site?.theme as SiteTheme | undefined) ?? undefined}
-            primaryItems={draftFor(primaryMenu)}
-            footerItems={draftFor(footerMenu)}
+            theme={previewTheme}
+            primaryItems={primaryDraft}
+            footerItems={footerDraft}
             primaryAssigned={!!primaryMenu}
             footerAssigned={!!footerMenu}
             pagesById={pagesById}
@@ -234,6 +253,36 @@ function MenusPage() {
     </div>
   );
 }
+
+function resolveDraft(
+  menu:
+    | {
+        id: string;
+        items: Array<{
+          label: string;
+          type: string;
+          pageId: string | null;
+          url: string | null;
+          anchor: string | null;
+          openInNewTab: boolean;
+        }>;
+      }
+    | undefined,
+  drafts: Record<string, DraftItem[]>,
+): DraftItem[] {
+  if (!menu) return EMPTY_DRAFTS;
+  const d = drafts[menu.id];
+  if (d) return d;
+  return menu.items.map((it) => ({
+    label: it.label,
+    type: (it.type as DraftItem["type"]) ?? "page",
+    pageId: it.pageId,
+    url: it.url,
+    anchor: it.anchor,
+    openInNewTab: it.openInNewTab,
+  }));
+}
+const EMPTY_DRAFTS: DraftItem[] = [];
 
 function resolveDraftHref(
   it: DraftItem,
@@ -252,7 +301,40 @@ function resolveDraftHref(
   return null;
 }
 
-function MenuPreview({
+const ThemePicker = memo(function ThemePicker({
+  value,
+  onChange,
+  sitePresetName,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  sitePresetName?: string;
+}) {
+  const presetKeys = Object.keys(PRESETS);
+  return (
+    <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 shadow-sm">
+      <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        Theme
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+      >
+        <option value="__site">
+          Site default{sitePresetName ? ` (${sitePresetName})` : ""}
+        </option>
+        {presetKeys.map((k) => (
+          <option key={k} value={k}>
+            {k}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+});
+
+const MenuPreview = memo(function MenuPreview({
   siteName,
   siteSlug,
   theme,
@@ -370,9 +452,9 @@ function MenuPreview({
       </div>
     </div>
   );
-}
+});
 
-function PreviewLink({
+const PreviewLink = memo(function PreviewLink({
   it,
   pagesById,
   subtle = false,
@@ -402,7 +484,7 @@ function PreviewLink({
       {unresolved ? <span aria-hidden>⚠</span> : null}
     </span>
   );
-}
+});
 
 function MenuEditor({
   menu,
