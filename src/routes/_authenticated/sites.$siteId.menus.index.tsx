@@ -207,7 +207,7 @@ function MenusPage() {
               key={menu.id}
               menu={menu}
               pages={pages}
-              onItemsChange={(items) => handleItemsChange(menu.id, items)}
+              onItemsChange={getItemsChangeHandler(menu.id)}
               onSave={(items) =>
                 replaceFn({ data: { menuId: menu.id, items } }).then(() =>
                   qc.invalidateQueries({ queryKey: ["menus", siteId] }),
