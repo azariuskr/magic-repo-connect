@@ -149,7 +149,15 @@ function EditPage() {
           <select
             value={pageId}
             onChange={(e) => {
-              window.location.href = `/sites/${siteId}/pages/${e.target.value}/edit`;
+              const next = e.target.value;
+              if (next === "__new__") {
+                navigate({ to: "/sites/$siteId/pages", params: { siteId } });
+                return;
+              }
+              navigate({
+                to: "/sites/$siteId/pages/$pageId/edit",
+                params: { siteId, pageId: next },
+              });
             }}
             className="rounded-md border bg-background px-2 py-1 text-xs"
           >
@@ -159,6 +167,7 @@ function EditPage() {
                 {p.isHome ? " (home)" : ""}
               </option>
             ))}
+            <option value="__new__">+ Manage pages…</option>
           </select>
           <span className="hidden truncate rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
             {page.path}
