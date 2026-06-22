@@ -16,14 +16,14 @@ import { Route as SSiteSlugIndexRouteImport } from './routes/s.$siteSlug.index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as SSiteSlugSplatRouteImport } from './routes/s.$siteSlug.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as SSiteSlugBlogIndexRouteImport } from './routes/s.$siteSlug.blog.index'
+import { Route as SSiteSlugBlogSlugRouteImport } from './routes/s.$siteSlug.blog.$slug'
 import { Route as AuthenticatedSitesSiteIdEditRouteImport } from './routes/_authenticated/sites.$siteId.edit'
 import { Route as AuthenticatedSitesSiteIdPagesIndexRouteImport } from './routes/_authenticated/sites.$siteId.pages.index'
 import { Route as AuthenticatedSitesSiteIdMenusIndexRouteImport } from './routes/_authenticated/sites.$siteId.menus.index'
 import { Route as AuthenticatedSitesSiteIdBlogIndexRouteImport } from './routes/_authenticated/sites.$siteId.blog.index'
 import { Route as AuthenticatedSitesSiteIdPagesPageIdEditRouteImport } from './routes/_authenticated/sites.$siteId.pages.$pageId.edit'
 import { Route as AuthenticatedSitesSiteIdBlogPostIdEditRouteImport } from './routes/_authenticated/sites.$siteId.blog.$postId.edit'
-import { Route as SSiteSlugBlogIndexRouteImport } from './routes/s.$siteSlug.blog.index'
-import { Route as SSiteSlugBlogSlugRouteImport } from './routes/s.$siteSlug.blog.$slug'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -58,6 +58,16 @@ const SSiteSlugSplatRoute = SSiteSlugSplatRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SSiteSlugBlogIndexRoute = SSiteSlugBlogIndexRouteImport.update({
+  id: '/s/$siteSlug/blog/',
+  path: '/s/$siteSlug/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SSiteSlugBlogSlugRoute = SSiteSlugBlogSlugRouteImport.update({
+  id: '/s/$siteSlug/blog/$slug',
+  path: '/s/$siteSlug/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSitesSiteIdEditRoute =
@@ -96,16 +106,6 @@ const AuthenticatedSitesSiteIdBlogPostIdEditRoute =
     path: '/sites/$siteId/blog/$postId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const SSiteSlugBlogIndexRoute = SSiteSlugBlogIndexRouteImport.update({
-  id: '/s/$siteSlug/blog/',
-  path: '/s/$siteSlug/blog/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SSiteSlugBlogSlugRoute = SSiteSlugBlogSlugRouteImport.update({
-  id: '/s/$siteSlug/blog/$slug',
-  path: '/s/$siteSlug/blog/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -115,11 +115,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/s/$siteSlug/': typeof SSiteSlugIndexRoute
   '/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
+  '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
+  '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
   '/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
   '/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
-  '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
-  '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
   '/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
   '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
 }
@@ -131,11 +131,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/s/$siteSlug': typeof SSiteSlugIndexRoute
   '/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
+  '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
+  '/s/$siteSlug/blog': typeof SSiteSlugBlogIndexRoute
   '/sites/$siteId/blog': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/menus': typeof AuthenticatedSitesSiteIdMenusIndexRoute
   '/sites/$siteId/pages': typeof AuthenticatedSitesSiteIdPagesIndexRoute
-  '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
-  '/s/$siteSlug/blog': typeof SSiteSlugBlogIndexRoute
   '/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
   '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
 }
@@ -149,11 +149,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/s/$siteSlug/': typeof SSiteSlugIndexRoute
   '/_authenticated/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
+  '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
+  '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
   '/_authenticated/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/_authenticated/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
   '/_authenticated/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
-  '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
-  '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
   '/_authenticated/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
   '/_authenticated/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
 }
@@ -167,11 +167,11 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/s/$siteSlug/'
     | '/sites/$siteId/edit'
+    | '/s/$siteSlug/blog/$slug'
+    | '/s/$siteSlug/blog/'
     | '/sites/$siteId/blog/'
     | '/sites/$siteId/menus/'
     | '/sites/$siteId/pages/'
-    | '/s/$siteSlug/blog/$slug'
-    | '/s/$siteSlug/blog/'
     | '/sites/$siteId/blog/$postId/edit'
     | '/sites/$siteId/pages/$pageId/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -183,11 +183,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/s/$siteSlug'
     | '/sites/$siteId/edit'
+    | '/s/$siteSlug/blog/$slug'
+    | '/s/$siteSlug/blog'
     | '/sites/$siteId/blog'
     | '/sites/$siteId/menus'
     | '/sites/$siteId/pages'
-    | '/s/$siteSlug/blog/$slug'
-    | '/s/$siteSlug/blog'
     | '/sites/$siteId/blog/$postId/edit'
     | '/sites/$siteId/pages/$pageId/edit'
   id:
@@ -200,11 +200,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/'
     | '/s/$siteSlug/'
     | '/_authenticated/sites/$siteId/edit'
+    | '/s/$siteSlug/blog/$slug'
+    | '/s/$siteSlug/blog/'
     | '/_authenticated/sites/$siteId/blog/'
     | '/_authenticated/sites/$siteId/menus/'
     | '/_authenticated/sites/$siteId/pages/'
-    | '/s/$siteSlug/blog/$slug'
-    | '/s/$siteSlug/blog/'
     | '/_authenticated/sites/$siteId/blog/$postId/edit'
     | '/_authenticated/sites/$siteId/pages/$pageId/edit'
   fileRoutesById: FileRoutesById
@@ -271,6 +271,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/s/$siteSlug/blog/': {
+      id: '/s/$siteSlug/blog/'
+      path: '/s/$siteSlug/blog'
+      fullPath: '/s/$siteSlug/blog/'
+      preLoaderRoute: typeof SSiteSlugBlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$siteSlug/blog/$slug': {
+      id: '/s/$siteSlug/blog/$slug'
+      path: '/s/$siteSlug/blog/$slug'
+      fullPath: '/s/$siteSlug/blog/$slug'
+      preLoaderRoute: typeof SSiteSlugBlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/sites/$siteId/edit': {
       id: '/_authenticated/sites/$siteId/edit'
       path: '/sites/$siteId/edit'
@@ -312,20 +326,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/sites/$siteId/blog/$postId/edit'
       preLoaderRoute: typeof AuthenticatedSitesSiteIdBlogPostIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/s/$siteSlug/blog/': {
-      id: '/s/$siteSlug/blog/'
-      path: '/s/$siteSlug/blog'
-      fullPath: '/s/$siteSlug/blog/'
-      preLoaderRoute: typeof SSiteSlugBlogIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/s/$siteSlug/blog/$slug': {
-      id: '/s/$siteSlug/blog/$slug'
-      path: '/s/$siteSlug/blog/$slug'
-      fullPath: '/s/$siteSlug/blog/$slug'
-      preLoaderRoute: typeof SSiteSlugBlogSlugRouteImport
-      parentRoute: typeof rootRouteImport
     }
   }
 }
