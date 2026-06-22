@@ -141,7 +141,7 @@ function BlogPostPage() {
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 sm:px-10 lg:px-16">
             <span className="text-xs">© {new Date().getFullYear()} {site.name}</span>
             <nav className="flex flex-wrap gap-4 text-xs">
-              {footerMenu.map((it) => (
+              {(footerMenu as PublishedMenuItem[]).map((it) => (
                 <a
                   key={it.id}
                   href={it.type === "page" ? pageHref(siteSlug, it.href) : it.href}
