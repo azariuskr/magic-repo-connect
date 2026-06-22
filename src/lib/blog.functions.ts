@@ -101,7 +101,7 @@ export const getBlogPost = createServerFn({ method: "GET" })
     const { ensureSchema } = await import("@/db/bootstrap.server");
     await ensureSchema();
     const { post, site } = await requireOwnedPost(data.id);
-    return { post, site };
+    return { post: stripPost(post), site };
   });
 
 export const createBlogPost = createServerFn({ method: "POST" })
@@ -129,7 +129,7 @@ export const createBlogPost = createServerFn({ method: "POST" })
         status: "draft",
       })
       .returning();
-    return row;
+    return stripPost(row);
   });
 
 export const saveBlogPost = createServerFn({ method: "POST" })
@@ -163,7 +163,7 @@ export const saveBlogPost = createServerFn({ method: "POST" })
     if (data.seoTitle !== undefined) update.seoTitle = data.seoTitle;
     if (data.seoDescription !== undefined) update.seoDescription = data.seoDescription;
     const [row] = await db.update(blogPosts).set(update).where(eq(blogPosts.id, data.id)).returning();
-    return row;
+    return stripPost(row);
   });
 
 export const publishBlogPost = createServerFn({ method: "POST" })
@@ -297,7 +297,21 @@ export const getPublishedBlogPost = createServerFn({ method: "GET" })
     const shell = await loadSiteShell(data.siteSlug);
     if (!shell) return null;
     const [post] = await db
-      .select()
+      .select({
+        id: blogPosts.id,
+        siteId: blogPosts.siteId,
+        title: blogPosts.title,
+        slug: blogPosts.slug,
+        excerpt: blogPosts.excerpt,
+        contentHtml: blogPosts.contentHtml,
+        status: blogPosts.status,
+        coverImageKey: blogPosts.coverImageKey,
+        seoTitle: blogPosts.seoTitle,
+        seoDescription: blogPosts.seoDescription,
+        publishedAt: blogPosts.publishedAt,
+        createdAt: blogPosts.createdAt,
+        updatedAt: blogPosts.updatedAt,
+      })
       .from(blogPosts)
       .where(
         and(
@@ -308,5 +322,7 @@ export const getPublishedBlogPost = createServerFn({ method: "GET" })
       )
       .limit(1);
     if (!post) return null;
+    return { ...shell, post };
+  });
     return { ...shell, post };
   });
