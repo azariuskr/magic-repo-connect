@@ -227,7 +227,11 @@ async function loadSiteShell(siteSlug: string) {
   const { db } = await import("@/db/client.server");
   const { sites, sitePages } = await import("@/db/schema");
   const { eq, and, isNotNull, asc } = await import("drizzle-orm");
-  const [site] = await db.select().from(sites).where(eq(sites.slug, siteSlug)).limit(1);
+  const [site] = await db
+    .select({ id: sites.id, name: sites.name, slug: sites.slug, theme: sites.theme })
+    .from(sites)
+    .where(eq(sites.slug, siteSlug))
+    .limit(1);
   if (!site) return null;
   const navRows = await db
     .select({
