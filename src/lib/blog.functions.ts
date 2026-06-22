@@ -47,6 +47,30 @@ const slugSchema = z
   .max(120)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase letters, numbers and dashes");
 
+// Drizzle's jsonb columns serialize as `unknown`, which TanStack server-fn's
+// serializer rejects. We never return `contentJson` over the wire — admin uses
+// `contentHtml` only — so define an explicit projection that omits it.
+function postFields() {
+  // Lazy-load to keep this module client-safe at top level.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { blogPosts } = require("@/db/schema") as typeof import("@/db/schema");
+  return {
+    id: blogPosts.id,
+    siteId: blogPosts.siteId,
+    title: blogPosts.title,
+    slug: blogPosts.slug,
+    excerpt: blogPosts.excerpt,
+    contentHtml: blogPosts.contentHtml,
+    status: blogPosts.status,
+    coverImageKey: blogPosts.coverImageKey,
+    seoTitle: blogPosts.seoTitle,
+    seoDescription: blogPosts.seoDescription,
+    publishedAt: blogPosts.publishedAt,
+    createdAt: blogPosts.createdAt,
+    updatedAt: blogPosts.updatedAt,
+  };
+}
+
 export const listBlogPosts = createServerFn({ method: "GET" })
   .inputValidator((i) => z.object({ siteId: z.string().uuid() }).parse(i))
   .handler(async ({ data }) => {
