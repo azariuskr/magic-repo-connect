@@ -567,7 +567,7 @@ export const blogPosts = pgTable(
     title: text("title").notNull(),
     slug: text("slug").notNull(),
     excerpt: text("excerpt"),
-    contentJson: jsonb("content_json").notNull().default(sql`'{}'::jsonb`),
+    contentJson: jsonb("content_json").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
     contentHtml: text("content_html"),
     status: text("status").notNull().default("draft"),
     coverImageKey: text("cover_image_key"),
