@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { getPublishedBlogIndex } from "@/lib/blog.functions";
 import { ThemeRoot, type SiteTheme } from "@/lib/theme";
+import type { PublishedMenuItem } from "@/lib/menus.functions";
+import type { PublishedNavItem } from "@/lib/pages.functions";
 
 export const Route = createFileRoute("/s/$siteSlug/blog/")({
   loader: async ({ params }) => {
@@ -40,13 +42,13 @@ function BlogIndexPage() {
   const { siteSlug } = Route.useParams();
   const headerItems =
     primaryMenu && primaryMenu.length > 0
-      ? primaryMenu.map((it) => ({
+      ? (primaryMenu as PublishedMenuItem[]).map((it) => ({
           id: it.id,
           label: it.label,
           href: it.type === "page" ? pageHref(siteSlug, it.href) : it.href,
           openInNewTab: it.openInNewTab,
         }))
-      : nav.map((it) => ({
+      : (nav as PublishedNavItem[]).map((it) => ({
           id: it.id,
           label: it.label,
           href: pageHref(siteSlug, it.path),
@@ -103,7 +105,7 @@ function BlogIndexPage() {
             <p style={{ color: "var(--site-muted)" }}>No posts yet.</p>
           ) : (
             <ul className="space-y-8">
-              {posts.map((p) => (
+              {(posts as Array<{ id: string; title: string; slug: string; excerpt: string | null; publishedAt: Date | string | null }>).map((p) => (
                 <li
                   key={p.id}
                   className="border-b pb-8 last:border-0"
@@ -153,7 +155,7 @@ function BlogIndexPage() {
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 sm:px-10 lg:px-16">
             <span className="text-xs">© {new Date().getFullYear()} {site.name}</span>
             <nav className="flex flex-wrap gap-4 text-xs">
-              {footerMenu.map((it) => (
+              {(footerMenu as PublishedMenuItem[]).map((it) => (
                 <a
                   key={it.id}
                   href={it.type === "page" ? pageHref(siteSlug, it.href) : it.href}

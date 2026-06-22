@@ -2,6 +2,8 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { getPublishedBlogPost } from "@/lib/blog.functions";
 import { ThemeRoot, type SiteTheme } from "@/lib/theme";
 import { RichTextView } from "@/lib/blocks";
+import type { PublishedMenuItem } from "@/lib/menus.functions";
+import type { PublishedNavItem } from "@/lib/pages.functions";
 
 export const Route = createFileRoute("/s/$siteSlug/blog/$slug")({
   loader: async ({ params }) => {
@@ -45,13 +47,13 @@ function BlogPostPage() {
   const { siteSlug } = Route.useParams();
   const headerItems =
     primaryMenu && primaryMenu.length > 0
-      ? primaryMenu.map((it) => ({
+      ? (primaryMenu as PublishedMenuItem[]).map((it) => ({
           id: it.id,
           label: it.label,
           href: it.type === "page" ? pageHref(siteSlug, it.href) : it.href,
           openInNewTab: it.openInNewTab,
         }))
-      : nav.map((it) => ({
+      : (nav as PublishedNavItem[]).map((it) => ({
           id: it.id,
           label: it.label,
           href: pageHref(siteSlug, it.path),
