@@ -49,26 +49,26 @@ const slugSchema = z
 
 // Drizzle's jsonb columns serialize as `unknown`, which TanStack server-fn's
 // serializer rejects. We never return `contentJson` over the wire — admin uses
-// `contentHtml` only — so define an explicit projection that omits it.
-function postFields() {
-  // Lazy-load to keep this module client-safe at top level.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { blogPosts } = require("@/db/schema") as typeof import("@/db/schema");
-  return {
-    id: blogPosts.id,
-    siteId: blogPosts.siteId,
-    title: blogPosts.title,
-    slug: blogPosts.slug,
-    excerpt: blogPosts.excerpt,
-    contentHtml: blogPosts.contentHtml,
-    status: blogPosts.status,
-    coverImageKey: blogPosts.coverImageKey,
-    seoTitle: blogPosts.seoTitle,
-    seoDescription: blogPosts.seoDescription,
-    publishedAt: blogPosts.publishedAt,
-    createdAt: blogPosts.createdAt,
-    updatedAt: blogPosts.updatedAt,
-  };
+// `contentHtml` only — so strip it from any row before returning.
+type BlogPostPublic = {
+  id: string;
+  siteId: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  contentHtml: string | null;
+  status: string;
+  coverImageKey: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+function stripPost(row: { contentJson?: unknown } & BlogPostPublic): BlogPostPublic {
+  const { contentJson: _omit, ...rest } = row;
+  void _omit;
+  return rest;
 }
 
 export const listBlogPosts = createServerFn({ method: "GET" })
