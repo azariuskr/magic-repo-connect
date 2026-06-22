@@ -180,7 +180,7 @@ export const publishBlogPost = createServerFn({ method: "POST" })
       .set({ status: "published", publishedAt: new Date(), updatedAt: new Date() })
       .where(eq(blogPosts.id, data.id))
       .returning();
-    return row;
+    return stripPost(row);
   });
 
 export const unpublishBlogPost = createServerFn({ method: "POST" })
@@ -197,7 +197,7 @@ export const unpublishBlogPost = createServerFn({ method: "POST" })
       .set({ status: "draft", updatedAt: new Date() })
       .where(eq(blogPosts.id, data.id))
       .returning();
-    return row;
+    return stripPost(row);
   });
 
 export const deleteBlogPost = createServerFn({ method: "POST" })
@@ -322,7 +322,5 @@ export const getPublishedBlogPost = createServerFn({ method: "GET" })
       )
       .limit(1);
     if (!post) return null;
-    return { ...shell, post };
-  });
     return { ...shell, post };
   });
