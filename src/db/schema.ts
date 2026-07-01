@@ -595,20 +595,42 @@ export const blogCategories = pgTable(
 // Forms
 // ============================================================
 
-export const forms = pgTable("forms", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  schema: jsonb("schema").notNull().default(sql`'{}'::jsonb`),
-  settings: jsonb("settings").notNull().default(sql`'{}'::jsonb`),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export type FormField = {
+  key: string;
+  label: string;
+  type: "text" | "email" | "textarea" | "tel";
+  required?: boolean;
+  placeholder?: string;
+};
+export type FormSchemaJson = { fields: FormField[] };
+export type FormSettingsJson = {
+  submitLabel?: string;
+  successMessage?: string;
+  notifyEmail?: string | null;
+};
+
+export const forms = pgTable(
+  "forms",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
+    key: text("key"),
+    name: text("name").notNull(),
+    schema: jsonb("schema").$type<FormSchemaJson>().notNull().default(sql`'{"fields":[]}'::jsonb`),
+    settings: jsonb("settings").$type<FormSettingsJson>().notNull().default(sql`'{}'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    siteIdx: index("forms_site_id_idx").on(t.siteId),
+  }),
+);
 
 export const formSubmissions = pgTable("form_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
   siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
   formId: uuid("form_id").references(() => forms.id, { onDelete: "set null" }),
-  data: jsonb("data").notNull().default(sql`'{}'::jsonb`),
+  data: jsonb("data").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+  readAt: timestamp("read_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

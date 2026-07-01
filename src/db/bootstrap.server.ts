@@ -479,18 +479,23 @@ CREATE UNIQUE INDEX IF NOT EXISTS blog_categories_site_id_slug_key ON "blog_cate
 CREATE TABLE IF NOT EXISTS "forms" (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id UUID NOT NULL REFERENCES "sites"(id) ON DELETE CASCADE,
+  key TEXT,
   name TEXT NOT NULL,
-  schema JSONB NOT NULL DEFAULT '{}'::jsonb,
+  schema JSONB NOT NULL DEFAULT '{"fields":[]}'::jsonb,
   settings JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE "forms" ADD COLUMN IF NOT EXISTS key TEXT;
+CREATE INDEX IF NOT EXISTS forms_site_id_idx ON "forms" (site_id);
 CREATE TABLE IF NOT EXISTS "form_submissions" (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id UUID NOT NULL REFERENCES "sites"(id) ON DELETE CASCADE,
   form_id UUID REFERENCES "forms"(id) ON DELETE SET NULL,
   data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  read_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE "form_submissions" ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
 
 -- ============================================================
 -- Analytics
