@@ -211,7 +211,16 @@ export const listSubmissions = createServerFn({ method: "GET" })
       .where(eq(formSubmissions.formId, data.formId))
       .orderBy(desc(formSubmissions.createdAt))
       .limit(200);
-    return rows;
+    return rows.map((r) => ({
+      id: r.id,
+      formId: r.formId,
+      siteId: r.siteId,
+      createdAt: r.createdAt,
+      readAt: r.readAt,
+      data: Object.fromEntries(
+        Object.entries((r.data ?? {}) as Record<string, unknown>).map(([k, v]) => [k, String(v ?? "")]),
+      ) as Record<string, string>,
+    }));
   });
 
 export const markSubmissionRead = createServerFn({ method: "POST" })
