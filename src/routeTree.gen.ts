@@ -16,14 +16,19 @@ import { Route as SSiteSlugIndexRouteImport } from './routes/s.$siteSlug.index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as SSiteSlugSplatRouteImport } from './routes/s.$siteSlug.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as SSiteSlugShopIndexRouteImport } from './routes/s.$siteSlug.shop.index'
 import { Route as SSiteSlugBlogIndexRouteImport } from './routes/s.$siteSlug.blog.index'
+import { Route as SSiteSlugShopSlugRouteImport } from './routes/s.$siteSlug.shop.$slug'
 import { Route as SSiteSlugFFormKeyRouteImport } from './routes/s.$siteSlug.f.$formKey'
 import { Route as SSiteSlugBlogSlugRouteImport } from './routes/s.$siteSlug.blog.$slug'
 import { Route as AuthenticatedSitesSiteIdEditRouteImport } from './routes/_authenticated/sites.$siteId.edit'
+import { Route as AuthenticatedSitesSiteIdProductsIndexRouteImport } from './routes/_authenticated/sites.$siteId.products.index'
 import { Route as AuthenticatedSitesSiteIdPagesIndexRouteImport } from './routes/_authenticated/sites.$siteId.pages.index'
+import { Route as AuthenticatedSitesSiteIdOrdersIndexRouteImport } from './routes/_authenticated/sites.$siteId.orders.index'
 import { Route as AuthenticatedSitesSiteIdMenusIndexRouteImport } from './routes/_authenticated/sites.$siteId.menus.index'
 import { Route as AuthenticatedSitesSiteIdFormsIndexRouteImport } from './routes/_authenticated/sites.$siteId.forms.index'
 import { Route as AuthenticatedSitesSiteIdBlogIndexRouteImport } from './routes/_authenticated/sites.$siteId.blog.index'
+import { Route as AuthenticatedSitesSiteIdProductsProductIdEditRouteImport } from './routes/_authenticated/sites.$siteId.products.$productId.edit'
 import { Route as AuthenticatedSitesSiteIdPagesPageIdEditRouteImport } from './routes/_authenticated/sites.$siteId.pages.$pageId.edit'
 import { Route as AuthenticatedSitesSiteIdFormsFormIdSubmissionsRouteImport } from './routes/_authenticated/sites.$siteId.forms.$formId.submissions'
 import { Route as AuthenticatedSitesSiteIdFormsFormIdEditRouteImport } from './routes/_authenticated/sites.$siteId.forms.$formId.edit'
@@ -64,9 +69,19 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SSiteSlugShopIndexRoute = SSiteSlugShopIndexRouteImport.update({
+  id: '/s/$siteSlug/shop/',
+  path: '/s/$siteSlug/shop/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SSiteSlugBlogIndexRoute = SSiteSlugBlogIndexRouteImport.update({
   id: '/s/$siteSlug/blog/',
   path: '/s/$siteSlug/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SSiteSlugShopSlugRoute = SSiteSlugShopSlugRouteImport.update({
+  id: '/s/$siteSlug/shop/$slug',
+  path: '/s/$siteSlug/shop/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSiteSlugFFormKeyRoute = SSiteSlugFFormKeyRouteImport.update({
@@ -85,10 +100,22 @@ const AuthenticatedSitesSiteIdEditRoute =
     path: '/sites/$siteId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSitesSiteIdProductsIndexRoute =
+  AuthenticatedSitesSiteIdProductsIndexRouteImport.update({
+    id: '/sites/$siteId/products/',
+    path: '/sites/$siteId/products/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSitesSiteIdPagesIndexRoute =
   AuthenticatedSitesSiteIdPagesIndexRouteImport.update({
     id: '/sites/$siteId/pages/',
     path: '/sites/$siteId/pages/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSitesSiteIdOrdersIndexRoute =
+  AuthenticatedSitesSiteIdOrdersIndexRouteImport.update({
+    id: '/sites/$siteId/orders/',
+    path: '/sites/$siteId/orders/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSitesSiteIdMenusIndexRoute =
@@ -107,6 +134,12 @@ const AuthenticatedSitesSiteIdBlogIndexRoute =
   AuthenticatedSitesSiteIdBlogIndexRouteImport.update({
     id: '/sites/$siteId/blog/',
     path: '/sites/$siteId/blog/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSitesSiteIdProductsProductIdEditRoute =
+  AuthenticatedSitesSiteIdProductsProductIdEditRouteImport.update({
+    id: '/sites/$siteId/products/$productId/edit',
+    path: '/sites/$siteId/products/$productId/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSitesSiteIdPagesPageIdEditRoute =
@@ -144,15 +177,20 @@ export interface FileRoutesByFullPath {
   '/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
   '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
   '/s/$siteSlug/f/$formKey': typeof SSiteSlugFFormKeyRoute
+  '/s/$siteSlug/shop/$slug': typeof SSiteSlugShopSlugRoute
   '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
+  '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
   '/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  '/sites/$siteId/orders/': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  '/sites/$siteId/products/': typeof AuthenticatedSitesSiteIdProductsIndexRoute
   '/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
   '/sites/$siteId/forms/$formId/edit': typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   '/sites/$siteId/forms/$formId/submissions': typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  '/sites/$siteId/products/$productId/edit': typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -164,15 +202,20 @@ export interface FileRoutesByTo {
   '/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
   '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
   '/s/$siteSlug/f/$formKey': typeof SSiteSlugFFormKeyRoute
+  '/s/$siteSlug/shop/$slug': typeof SSiteSlugShopSlugRoute
   '/s/$siteSlug/blog': typeof SSiteSlugBlogIndexRoute
+  '/s/$siteSlug/shop': typeof SSiteSlugShopIndexRoute
   '/sites/$siteId/blog': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/menus': typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  '/sites/$siteId/orders': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/sites/$siteId/pages': typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  '/sites/$siteId/products': typeof AuthenticatedSitesSiteIdProductsIndexRoute
   '/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
   '/sites/$siteId/forms/$formId/edit': typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   '/sites/$siteId/forms/$formId/submissions': typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  '/sites/$siteId/products/$productId/edit': typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -186,15 +229,20 @@ export interface FileRoutesById {
   '/_authenticated/sites/$siteId/edit': typeof AuthenticatedSitesSiteIdEditRoute
   '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
   '/s/$siteSlug/f/$formKey': typeof SSiteSlugFFormKeyRoute
+  '/s/$siteSlug/shop/$slug': typeof SSiteSlugShopSlugRoute
   '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
+  '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
   '/_authenticated/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/_authenticated/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/_authenticated/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  '/_authenticated/sites/$siteId/orders/': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/_authenticated/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  '/_authenticated/sites/$siteId/products/': typeof AuthenticatedSitesSiteIdProductsIndexRoute
   '/_authenticated/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
   '/_authenticated/sites/$siteId/forms/$formId/edit': typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   '/_authenticated/sites/$siteId/forms/$formId/submissions': typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   '/_authenticated/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  '/_authenticated/sites/$siteId/products/$productId/edit': typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -208,15 +256,20 @@ export interface FileRouteTypes {
     | '/sites/$siteId/edit'
     | '/s/$siteSlug/blog/$slug'
     | '/s/$siteSlug/f/$formKey'
+    | '/s/$siteSlug/shop/$slug'
     | '/s/$siteSlug/blog/'
+    | '/s/$siteSlug/shop/'
     | '/sites/$siteId/blog/'
     | '/sites/$siteId/forms/'
     | '/sites/$siteId/menus/'
+    | '/sites/$siteId/orders/'
     | '/sites/$siteId/pages/'
+    | '/sites/$siteId/products/'
     | '/sites/$siteId/blog/$postId/edit'
     | '/sites/$siteId/forms/$formId/edit'
     | '/sites/$siteId/forms/$formId/submissions'
     | '/sites/$siteId/pages/$pageId/edit'
+    | '/sites/$siteId/products/$productId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -228,15 +281,20 @@ export interface FileRouteTypes {
     | '/sites/$siteId/edit'
     | '/s/$siteSlug/blog/$slug'
     | '/s/$siteSlug/f/$formKey'
+    | '/s/$siteSlug/shop/$slug'
     | '/s/$siteSlug/blog'
+    | '/s/$siteSlug/shop'
     | '/sites/$siteId/blog'
     | '/sites/$siteId/forms'
     | '/sites/$siteId/menus'
+    | '/sites/$siteId/orders'
     | '/sites/$siteId/pages'
+    | '/sites/$siteId/products'
     | '/sites/$siteId/blog/$postId/edit'
     | '/sites/$siteId/forms/$formId/edit'
     | '/sites/$siteId/forms/$formId/submissions'
     | '/sites/$siteId/pages/$pageId/edit'
+    | '/sites/$siteId/products/$productId/edit'
   id:
     | '__root__'
     | '/'
@@ -249,15 +307,20 @@ export interface FileRouteTypes {
     | '/_authenticated/sites/$siteId/edit'
     | '/s/$siteSlug/blog/$slug'
     | '/s/$siteSlug/f/$formKey'
+    | '/s/$siteSlug/shop/$slug'
     | '/s/$siteSlug/blog/'
+    | '/s/$siteSlug/shop/'
     | '/_authenticated/sites/$siteId/blog/'
     | '/_authenticated/sites/$siteId/forms/'
     | '/_authenticated/sites/$siteId/menus/'
+    | '/_authenticated/sites/$siteId/orders/'
     | '/_authenticated/sites/$siteId/pages/'
+    | '/_authenticated/sites/$siteId/products/'
     | '/_authenticated/sites/$siteId/blog/$postId/edit'
     | '/_authenticated/sites/$siteId/forms/$formId/edit'
     | '/_authenticated/sites/$siteId/forms/$formId/submissions'
     | '/_authenticated/sites/$siteId/pages/$pageId/edit'
+    | '/_authenticated/sites/$siteId/products/$productId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -269,7 +332,9 @@ export interface RootRouteChildren {
   SSiteSlugIndexRoute: typeof SSiteSlugIndexRoute
   SSiteSlugBlogSlugRoute: typeof SSiteSlugBlogSlugRoute
   SSiteSlugFFormKeyRoute: typeof SSiteSlugFFormKeyRoute
+  SSiteSlugShopSlugRoute: typeof SSiteSlugShopSlugRoute
   SSiteSlugBlogIndexRoute: typeof SSiteSlugBlogIndexRoute
+  SSiteSlugShopIndexRoute: typeof SSiteSlugShopIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -323,11 +388,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/s/$siteSlug/shop/': {
+      id: '/s/$siteSlug/shop/'
+      path: '/s/$siteSlug/shop'
+      fullPath: '/s/$siteSlug/shop/'
+      preLoaderRoute: typeof SSiteSlugShopIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/s/$siteSlug/blog/': {
       id: '/s/$siteSlug/blog/'
       path: '/s/$siteSlug/blog'
       fullPath: '/s/$siteSlug/blog/'
       preLoaderRoute: typeof SSiteSlugBlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$siteSlug/shop/$slug': {
+      id: '/s/$siteSlug/shop/$slug'
+      path: '/s/$siteSlug/shop/$slug'
+      fullPath: '/s/$siteSlug/shop/$slug'
+      preLoaderRoute: typeof SSiteSlugShopSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$siteSlug/f/$formKey': {
@@ -351,11 +430,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSitesSiteIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sites/$siteId/products/': {
+      id: '/_authenticated/sites/$siteId/products/'
+      path: '/sites/$siteId/products'
+      fullPath: '/sites/$siteId/products/'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdProductsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sites/$siteId/pages/': {
       id: '/_authenticated/sites/$siteId/pages/'
       path: '/sites/$siteId/pages'
       fullPath: '/sites/$siteId/pages/'
       preLoaderRoute: typeof AuthenticatedSitesSiteIdPagesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sites/$siteId/orders/': {
+      id: '/_authenticated/sites/$siteId/orders/'
+      path: '/sites/$siteId/orders'
+      fullPath: '/sites/$siteId/orders/'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdOrdersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sites/$siteId/menus/': {
@@ -377,6 +470,13 @@ declare module '@tanstack/react-router' {
       path: '/sites/$siteId/blog'
       fullPath: '/sites/$siteId/blog/'
       preLoaderRoute: typeof AuthenticatedSitesSiteIdBlogIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sites/$siteId/products/$productId/edit': {
+      id: '/_authenticated/sites/$siteId/products/$productId/edit'
+      path: '/sites/$siteId/products/$productId/edit'
+      fullPath: '/sites/$siteId/products/$productId/edit'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdProductsProductIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sites/$siteId/pages/$pageId/edit': {
@@ -416,11 +516,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSitesSiteIdBlogIndexRoute: typeof AuthenticatedSitesSiteIdBlogIndexRoute
   AuthenticatedSitesSiteIdFormsIndexRoute: typeof AuthenticatedSitesSiteIdFormsIndexRoute
   AuthenticatedSitesSiteIdMenusIndexRoute: typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  AuthenticatedSitesSiteIdOrdersIndexRoute: typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   AuthenticatedSitesSiteIdPagesIndexRoute: typeof AuthenticatedSitesSiteIdPagesIndexRoute
+  AuthenticatedSitesSiteIdProductsIndexRoute: typeof AuthenticatedSitesSiteIdProductsIndexRoute
   AuthenticatedSitesSiteIdBlogPostIdEditRoute: typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
   AuthenticatedSitesSiteIdFormsFormIdEditRoute: typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute: typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   AuthenticatedSitesSiteIdPagesPageIdEditRoute: typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  AuthenticatedSitesSiteIdProductsProductIdEditRoute: typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -432,8 +535,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSitesSiteIdFormsIndexRoute,
   AuthenticatedSitesSiteIdMenusIndexRoute:
     AuthenticatedSitesSiteIdMenusIndexRoute,
+  AuthenticatedSitesSiteIdOrdersIndexRoute:
+    AuthenticatedSitesSiteIdOrdersIndexRoute,
   AuthenticatedSitesSiteIdPagesIndexRoute:
     AuthenticatedSitesSiteIdPagesIndexRoute,
+  AuthenticatedSitesSiteIdProductsIndexRoute:
+    AuthenticatedSitesSiteIdProductsIndexRoute,
   AuthenticatedSitesSiteIdBlogPostIdEditRoute:
     AuthenticatedSitesSiteIdBlogPostIdEditRoute,
   AuthenticatedSitesSiteIdFormsFormIdEditRoute:
@@ -442,6 +549,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute,
   AuthenticatedSitesSiteIdPagesPageIdEditRoute:
     AuthenticatedSitesSiteIdPagesPageIdEditRoute,
+  AuthenticatedSitesSiteIdProductsProductIdEditRoute:
+    AuthenticatedSitesSiteIdProductsProductIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -456,7 +565,9 @@ const rootRouteChildren: RootRouteChildren = {
   SSiteSlugIndexRoute: SSiteSlugIndexRoute,
   SSiteSlugBlogSlugRoute: SSiteSlugBlogSlugRoute,
   SSiteSlugFFormKeyRoute: SSiteSlugFFormKeyRoute,
+  SSiteSlugShopSlugRoute: SSiteSlugShopSlugRoute,
   SSiteSlugBlogIndexRoute: SSiteSlugBlogIndexRoute,
+  SSiteSlugShopIndexRoute: SSiteSlugShopIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
