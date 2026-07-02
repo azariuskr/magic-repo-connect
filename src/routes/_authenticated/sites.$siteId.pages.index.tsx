@@ -85,6 +85,20 @@ function PagesIndex() {
           >
             Forms
           </Link>
+          <Link
+            to="/sites/$siteId/products"
+            params={{ siteId }}
+            className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
+          >
+            Products
+          </Link>
+          <Link
+            to="/sites/$siteId/orders"
+            params={{ siteId }}
+            className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
+          >
+            Orders
+          </Link>
           {site ? (
             <a
               href={`/s/${site.slug}`}
