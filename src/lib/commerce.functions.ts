@@ -335,9 +335,15 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       .update(orders)
       .set({ status: data.status, updatedAt: new Date() })
       .where(eq(orders.id, data.id))
-      .returning();
+      .returning({
+        id: orders.id,
+        status: orders.status,
+        paymentStatus: orders.paymentStatus,
+        updatedAt: orders.updatedAt,
+      });
     return row;
   });
+
 
 // ---------- Public storefront ----------
 
