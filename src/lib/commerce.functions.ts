@@ -271,17 +271,41 @@ export const getOrder = createServerFn({ method: "GET" })
     const { eq, and } = await import("drizzle-orm");
     await ensureSchema();
     const user = await requireSession();
-    const [order] = await db.select().from(orders).where(eq(orders.id, data.id)).limit(1);
+    const orderCols = {
+      id: orders.id,
+      siteId: orders.siteId,
+      customerId: orders.customerId,
+      customerEmail: orders.customerEmail,
+      customerName: orders.customerName,
+      status: orders.status,
+      paymentStatus: orders.paymentStatus,
+      totalCents: orders.totalCents,
+      currency: orders.currency,
+      createdAt: orders.createdAt,
+      updatedAt: orders.updatedAt,
+    };
+    const [order] = await db.select(orderCols).from(orders).where(eq(orders.id, data.id)).limit(1);
     if (!order) throw new Error("Not found");
     const [site] = await db
-      .select()
+      .select({ id: sites.id, name: sites.name, slug: sites.slug })
       .from(sites)
       .where(and(eq(sites.id, order.siteId), eq(sites.ownerId, user.id)))
       .limit(1);
     if (!site) throw new Error("Not found");
-    const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+    const items = await db
+      .select({
+        id: orderItems.id,
+        productId: orderItems.productId,
+        name: orderItems.name,
+        quantity: orderItems.quantity,
+        unitPriceCents: orderItems.unitPriceCents,
+        totalCents: orderItems.totalCents,
+      })
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
     return { order, items, site };
   });
+
 
 export const updateOrderStatus = createServerFn({ method: "POST" })
   .inputValidator((i) =>
