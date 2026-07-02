@@ -22,6 +22,7 @@ import { Route as SSiteSlugBlogSlugRouteImport } from './routes/s.$siteSlug.blog
 import { Route as AuthenticatedSitesSiteIdEditRouteImport } from './routes/_authenticated/sites.$siteId.edit'
 import { Route as AuthenticatedSitesSiteIdProductsIndexRouteImport } from './routes/_authenticated/sites.$siteId.products.index'
 import { Route as AuthenticatedSitesSiteIdPagesIndexRouteImport } from './routes/_authenticated/sites.$siteId.pages.index'
+import { Route as AuthenticatedSitesSiteIdOrdersIndexRouteImport } from './routes/_authenticated/sites.$siteId.orders.index'
 import { Route as AuthenticatedSitesSiteIdMenusIndexRouteImport } from './routes/_authenticated/sites.$siteId.menus.index'
 import { Route as AuthenticatedSitesSiteIdFormsIndexRouteImport } from './routes/_authenticated/sites.$siteId.forms.index'
 import { Route as AuthenticatedSitesSiteIdBlogIndexRouteImport } from './routes/_authenticated/sites.$siteId.blog.index'
@@ -99,6 +100,12 @@ const AuthenticatedSitesSiteIdPagesIndexRoute =
     path: '/sites/$siteId/pages/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSitesSiteIdOrdersIndexRoute =
+  AuthenticatedSitesSiteIdOrdersIndexRouteImport.update({
+    id: '/sites/$siteId/orders/',
+    path: '/sites/$siteId/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSitesSiteIdMenusIndexRoute =
   AuthenticatedSitesSiteIdMenusIndexRouteImport.update({
     id: '/sites/$siteId/menus/',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  '/sites/$siteId/orders/': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
   '/sites/$siteId/products/': typeof AuthenticatedSitesSiteIdProductsIndexRoute
   '/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
@@ -184,6 +192,7 @@ export interface FileRoutesByTo {
   '/sites/$siteId/blog': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/menus': typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  '/sites/$siteId/orders': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/sites/$siteId/pages': typeof AuthenticatedSitesSiteIdPagesIndexRoute
   '/sites/$siteId/products': typeof AuthenticatedSitesSiteIdProductsIndexRoute
   '/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
@@ -208,6 +217,7 @@ export interface FileRoutesById {
   '/_authenticated/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/_authenticated/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/_authenticated/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  '/_authenticated/sites/$siteId/orders/': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/_authenticated/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
   '/_authenticated/sites/$siteId/products/': typeof AuthenticatedSitesSiteIdProductsIndexRoute
   '/_authenticated/sites/$siteId/blog/$postId/edit': typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/sites/$siteId/blog/'
     | '/sites/$siteId/forms/'
     | '/sites/$siteId/menus/'
+    | '/sites/$siteId/orders/'
     | '/sites/$siteId/pages/'
     | '/sites/$siteId/products/'
     | '/sites/$siteId/blog/$postId/edit'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/sites/$siteId/blog'
     | '/sites/$siteId/forms'
     | '/sites/$siteId/menus'
+    | '/sites/$siteId/orders'
     | '/sites/$siteId/pages'
     | '/sites/$siteId/products'
     | '/sites/$siteId/blog/$postId/edit'
@@ -277,6 +289,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sites/$siteId/blog/'
     | '/_authenticated/sites/$siteId/forms/'
     | '/_authenticated/sites/$siteId/menus/'
+    | '/_authenticated/sites/$siteId/orders/'
     | '/_authenticated/sites/$siteId/pages/'
     | '/_authenticated/sites/$siteId/products/'
     | '/_authenticated/sites/$siteId/blog/$postId/edit'
@@ -391,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSitesSiteIdPagesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sites/$siteId/orders/': {
+      id: '/_authenticated/sites/$siteId/orders/'
+      path: '/sites/$siteId/orders'
+      fullPath: '/sites/$siteId/orders/'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sites/$siteId/menus/': {
       id: '/_authenticated/sites/$siteId/menus/'
       path: '/sites/$siteId/menus'
@@ -456,6 +476,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSitesSiteIdBlogIndexRoute: typeof AuthenticatedSitesSiteIdBlogIndexRoute
   AuthenticatedSitesSiteIdFormsIndexRoute: typeof AuthenticatedSitesSiteIdFormsIndexRoute
   AuthenticatedSitesSiteIdMenusIndexRoute: typeof AuthenticatedSitesSiteIdMenusIndexRoute
+  AuthenticatedSitesSiteIdOrdersIndexRoute: typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   AuthenticatedSitesSiteIdPagesIndexRoute: typeof AuthenticatedSitesSiteIdPagesIndexRoute
   AuthenticatedSitesSiteIdProductsIndexRoute: typeof AuthenticatedSitesSiteIdProductsIndexRoute
   AuthenticatedSitesSiteIdBlogPostIdEditRoute: typeof AuthenticatedSitesSiteIdBlogPostIdEditRoute
@@ -474,6 +495,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSitesSiteIdFormsIndexRoute,
   AuthenticatedSitesSiteIdMenusIndexRoute:
     AuthenticatedSitesSiteIdMenusIndexRoute,
+  AuthenticatedSitesSiteIdOrdersIndexRoute:
+    AuthenticatedSitesSiteIdOrdersIndexRoute,
   AuthenticatedSitesSiteIdPagesIndexRoute:
     AuthenticatedSitesSiteIdPagesIndexRoute,
   AuthenticatedSitesSiteIdProductsIndexRoute:
