@@ -25,6 +25,7 @@ import { Route as AuthenticatedSitesSiteIdPagesIndexRouteImport } from './routes
 import { Route as AuthenticatedSitesSiteIdMenusIndexRouteImport } from './routes/_authenticated/sites.$siteId.menus.index'
 import { Route as AuthenticatedSitesSiteIdFormsIndexRouteImport } from './routes/_authenticated/sites.$siteId.forms.index'
 import { Route as AuthenticatedSitesSiteIdBlogIndexRouteImport } from './routes/_authenticated/sites.$siteId.blog.index'
+import { Route as AuthenticatedSitesSiteIdProductsProductIdEditRouteImport } from './routes/_authenticated/sites.$siteId.products.$productId.edit'
 import { Route as AuthenticatedSitesSiteIdPagesPageIdEditRouteImport } from './routes/_authenticated/sites.$siteId.pages.$pageId.edit'
 import { Route as AuthenticatedSitesSiteIdFormsFormIdSubmissionsRouteImport } from './routes/_authenticated/sites.$siteId.forms.$formId.submissions'
 import { Route as AuthenticatedSitesSiteIdFormsFormIdEditRouteImport } from './routes/_authenticated/sites.$siteId.forms.$formId.edit'
@@ -116,6 +117,12 @@ const AuthenticatedSitesSiteIdBlogIndexRoute =
     path: '/sites/$siteId/blog/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSitesSiteIdProductsProductIdEditRoute =
+  AuthenticatedSitesSiteIdProductsProductIdEditRouteImport.update({
+    id: '/sites/$siteId/products/$productId/edit',
+    path: '/sites/$siteId/products/$productId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSitesSiteIdPagesPageIdEditRoute =
   AuthenticatedSitesSiteIdPagesPageIdEditRouteImport.update({
     id: '/sites/$siteId/pages/$pageId/edit',
@@ -161,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/sites/$siteId/forms/$formId/edit': typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   '/sites/$siteId/forms/$formId/submissions': typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  '/sites/$siteId/products/$productId/edit': typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +190,7 @@ export interface FileRoutesByTo {
   '/sites/$siteId/forms/$formId/edit': typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   '/sites/$siteId/forms/$formId/submissions': typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   '/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  '/sites/$siteId/products/$productId/edit': typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -205,6 +214,7 @@ export interface FileRoutesById {
   '/_authenticated/sites/$siteId/forms/$formId/edit': typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   '/_authenticated/sites/$siteId/forms/$formId/submissions': typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   '/_authenticated/sites/$siteId/pages/$pageId/edit': typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  '/_authenticated/sites/$siteId/products/$productId/edit': typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/sites/$siteId/forms/$formId/edit'
     | '/sites/$siteId/forms/$formId/submissions'
     | '/sites/$siteId/pages/$pageId/edit'
+    | '/sites/$siteId/products/$productId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/sites/$siteId/forms/$formId/edit'
     | '/sites/$siteId/forms/$formId/submissions'
     | '/sites/$siteId/pages/$pageId/edit'
+    | '/sites/$siteId/products/$productId/edit'
   id:
     | '__root__'
     | '/'
@@ -271,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sites/$siteId/forms/$formId/edit'
     | '/_authenticated/sites/$siteId/forms/$formId/submissions'
     | '/_authenticated/sites/$siteId/pages/$pageId/edit'
+    | '/_authenticated/sites/$siteId/products/$productId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -399,6 +412,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSitesSiteIdBlogIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sites/$siteId/products/$productId/edit': {
+      id: '/_authenticated/sites/$siteId/products/$productId/edit'
+      path: '/sites/$siteId/products/$productId/edit'
+      fullPath: '/sites/$siteId/products/$productId/edit'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdProductsProductIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sites/$siteId/pages/$pageId/edit': {
       id: '/_authenticated/sites/$siteId/pages/$pageId/edit'
       path: '/sites/$siteId/pages/$pageId/edit'
@@ -442,6 +462,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSitesSiteIdFormsFormIdEditRoute: typeof AuthenticatedSitesSiteIdFormsFormIdEditRoute
   AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute: typeof AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute
   AuthenticatedSitesSiteIdPagesPageIdEditRoute: typeof AuthenticatedSitesSiteIdPagesPageIdEditRoute
+  AuthenticatedSitesSiteIdProductsProductIdEditRoute: typeof AuthenticatedSitesSiteIdProductsProductIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -465,6 +486,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSitesSiteIdFormsFormIdSubmissionsRoute,
   AuthenticatedSitesSiteIdPagesPageIdEditRoute:
     AuthenticatedSitesSiteIdPagesPageIdEditRoute,
+  AuthenticatedSitesSiteIdProductsProductIdEditRoute:
+    AuthenticatedSitesSiteIdProductsProductIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
