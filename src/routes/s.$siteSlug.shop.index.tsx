@@ -110,7 +110,7 @@ function ShopIndexPage() {
             <p style={{ color: "var(--site-muted)" }}>No products available yet.</p>
           ) : (
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {products.map((p) => (
+              {(products as Array<{ id: string; name: string; slug: string; priceCents: number; currency: string; images: string[] }>).map((p) => (
                 <Link
                   key={p.id}
                   to="/s/$siteSlug/shop/$slug"

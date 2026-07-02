@@ -16,6 +16,7 @@ import { Route as SSiteSlugIndexRouteImport } from './routes/s.$siteSlug.index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as SSiteSlugSplatRouteImport } from './routes/s.$siteSlug.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as SSiteSlugShopIndexRouteImport } from './routes/s.$siteSlug.shop.index'
 import { Route as SSiteSlugBlogIndexRouteImport } from './routes/s.$siteSlug.blog.index'
 import { Route as SSiteSlugFFormKeyRouteImport } from './routes/s.$siteSlug.f.$formKey'
 import { Route as SSiteSlugBlogSlugRouteImport } from './routes/s.$siteSlug.blog.$slug'
@@ -65,6 +66,11 @@ const SSiteSlugSplatRoute = SSiteSlugSplatRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SSiteSlugShopIndexRoute = SSiteSlugShopIndexRouteImport.update({
+  id: '/s/$siteSlug/shop/',
+  path: '/s/$siteSlug/shop/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSiteSlugBlogIndexRoute = SSiteSlugBlogIndexRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
   '/s/$siteSlug/f/$formKey': typeof SSiteSlugFFormKeyRoute
   '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
+  '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
   '/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
   '/s/$siteSlug/f/$formKey': typeof SSiteSlugFFormKeyRoute
   '/s/$siteSlug/blog': typeof SSiteSlugBlogIndexRoute
+  '/s/$siteSlug/shop': typeof SSiteSlugShopIndexRoute
   '/sites/$siteId/blog': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/menus': typeof AuthenticatedSitesSiteIdMenusIndexRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/s/$siteSlug/blog/$slug': typeof SSiteSlugBlogSlugRoute
   '/s/$siteSlug/f/$formKey': typeof SSiteSlugFFormKeyRoute
   '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
+  '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
   '/_authenticated/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/_authenticated/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/_authenticated/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
@@ -239,6 +248,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/blog/$slug'
     | '/s/$siteSlug/f/$formKey'
     | '/s/$siteSlug/blog/'
+    | '/s/$siteSlug/shop/'
     | '/sites/$siteId/blog/'
     | '/sites/$siteId/forms/'
     | '/sites/$siteId/menus/'
@@ -262,6 +272,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/blog/$slug'
     | '/s/$siteSlug/f/$formKey'
     | '/s/$siteSlug/blog'
+    | '/s/$siteSlug/shop'
     | '/sites/$siteId/blog'
     | '/sites/$siteId/forms'
     | '/sites/$siteId/menus'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/blog/$slug'
     | '/s/$siteSlug/f/$formKey'
     | '/s/$siteSlug/blog/'
+    | '/s/$siteSlug/shop/'
     | '/_authenticated/sites/$siteId/blog/'
     | '/_authenticated/sites/$siteId/forms/'
     | '/_authenticated/sites/$siteId/menus/'
@@ -309,6 +321,7 @@ export interface RootRouteChildren {
   SSiteSlugBlogSlugRoute: typeof SSiteSlugBlogSlugRoute
   SSiteSlugFFormKeyRoute: typeof SSiteSlugFFormKeyRoute
   SSiteSlugBlogIndexRoute: typeof SSiteSlugBlogIndexRoute
+  SSiteSlugShopIndexRoute: typeof SSiteSlugShopIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$siteSlug/shop/': {
+      id: '/s/$siteSlug/shop/'
+      path: '/s/$siteSlug/shop'
+      fullPath: '/s/$siteSlug/shop/'
+      preLoaderRoute: typeof SSiteSlugShopIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$siteSlug/blog/': {
@@ -526,6 +546,7 @@ const rootRouteChildren: RootRouteChildren = {
   SSiteSlugBlogSlugRoute: SSiteSlugBlogSlugRoute,
   SSiteSlugFFormKeyRoute: SSiteSlugFFormKeyRoute,
   SSiteSlugBlogIndexRoute: SSiteSlugBlogIndexRoute,
+  SSiteSlugShopIndexRoute: SSiteSlugShopIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
