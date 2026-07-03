@@ -1,6 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { KNOWN_EVENT_TYPES } from "./events.server";
+
+// Duplicated from events.server.ts because that file is server-only and can't
+// be imported at module scope of a .functions.ts (client bundle would fail).
+export const KNOWN_EVENT_TYPES = [
+  "order.created",
+  "form.submitted",
+  "blog.post.published",
+] as const;
+export type KnownEventType = (typeof KNOWN_EVENT_TYPES)[number];
 
 async function requireSession() {
   const { getRequest } = await import("@tanstack/react-start/server");
