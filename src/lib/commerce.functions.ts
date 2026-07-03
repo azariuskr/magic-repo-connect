@@ -547,5 +547,23 @@ export const placeOrder = createServerFn({ method: "POST" })
       totalCents,
     });
 
+    const { emitEvent } = await import("@/lib/events.server");
+    await emitEvent(
+      site.id,
+      "order.created",
+      {
+        orderId: order.id,
+        productId: product.id,
+        productName: product.name,
+        quantity: data.quantity,
+        totalCents,
+        currency: product.currency,
+        customerEmail: email,
+        customerName: data.customerName,
+        notes: data.notes ?? null,
+      },
+      "commerce",
+      order.id,
+    );
     return { ok: true, orderId: order.id };
   });

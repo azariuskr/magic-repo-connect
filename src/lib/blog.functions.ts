@@ -180,6 +180,19 @@ export const publishBlogPost = createServerFn({ method: "POST" })
       .set({ status: "published", publishedAt: new Date(), updatedAt: new Date() })
       .where(eq(blogPosts.id, data.id))
       .returning();
+    const { emitEvent } = await import("@/lib/events.server");
+    await emitEvent(
+      row.siteId,
+      "blog.post.published",
+      {
+        postId: row.id,
+        title: row.title,
+        slug: row.slug,
+        excerpt: row.excerpt ?? null,
+      },
+      "blog",
+      row.id,
+    );
     return stripPost(row);
   });
 
