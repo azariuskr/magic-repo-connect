@@ -34,6 +34,7 @@ import { Route as AuthenticatedSitesSiteIdPagesPageIdEditRouteImport } from './r
 import { Route as AuthenticatedSitesSiteIdFormsFormIdSubmissionsRouteImport } from './routes/_authenticated/sites.$siteId.forms.$formId.submissions'
 import { Route as AuthenticatedSitesSiteIdFormsFormIdEditRouteImport } from './routes/_authenticated/sites.$siteId.forms.$formId.edit'
 import { Route as AuthenticatedSitesSiteIdBlogPostIdEditRouteImport } from './routes/_authenticated/sites.$siteId.blog.$postId.edit'
+import { Route as AuthenticatedSitesSiteIdWorkflowsIndexRouteImport } from './routes/_authenticated/sites.$siteId.workflows.index'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -141,6 +142,12 @@ const AuthenticatedSitesSiteIdBlogIndexRoute =
   AuthenticatedSitesSiteIdBlogIndexRouteImport.update({
     id: '/sites/$siteId/blog/',
     path: '/sites/$siteId/blog/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSitesSiteIdWorkflowsIndexRoute =
+  AuthenticatedSitesSiteIdWorkflowsIndexRouteImport.update({
+    id: '/sites/$siteId/workflows/',
+    path: '/sites/$siteId/workflows/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSitesSiteIdProductsProductIdEditRoute =
