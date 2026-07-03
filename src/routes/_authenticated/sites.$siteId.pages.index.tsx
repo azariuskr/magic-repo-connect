@@ -99,6 +99,13 @@ function PagesIndex() {
           >
             Orders
           </Link>
+          <Link
+            to="/sites/$siteId/workflows"
+            params={{ siteId }}
+            className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
+          >
+            Workflows
+          </Link>
           {site ? (
             <a
               href={`/s/${site.slug}`}
