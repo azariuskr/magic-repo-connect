@@ -326,8 +326,23 @@ export const submitForm = createServerFn({ method: "POST" })
     for (const f of form.schema?.fields ?? []) {
       if (f.required && !clean[f.key]) throw new Error(`"${f.label}" is required`);
     }
-    await db
+    const [submission] = await db
       .insert(formSubmissions)
-      .values({ siteId: form.siteId, formId: form.id, data: clean });
+      .values({ siteId: form.siteId, formId: form.id, data: clean })
+      .returning({ id: formSubmissions.id });
+    const { emitEvent } = await import("@/lib/events.server");
+    await emitEvent(
+      form.siteId,
+      "form.submitted",
+      {
+        submissionId: submission.id,
+        formId: form.id,
+        formName: form.name,
+        formKey: form.key,
+        data: clean,
+      },
+      "forms",
+      submission.id,
+    );
     return { ok: true, message: form.settings?.successMessage ?? "Thanks!" };
   });
