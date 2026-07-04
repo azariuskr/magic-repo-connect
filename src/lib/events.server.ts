@@ -15,7 +15,17 @@ export type KnownEventType = (typeof KNOWN_EVENT_TYPES)[number];
 
 export type WorkflowStep =
   | { id: string; type: "webhook"; url: string; method?: "POST" | "GET" }
-  | { id: string; type: "log"; message: string };
+  | { id: string; type: "log"; message: string }
+  | {
+      id: string;
+      type: "integration_call";
+      accountId: string;
+      to?: string;
+      subject?: string;
+      text?: string;
+      path?: string;
+      method?: "GET" | "POST" | "PUT" | "DELETE";
+    };
 
 export type WorkflowGraph = { nodes: WorkflowStep[]; edges?: unknown[] };
 
@@ -140,6 +150,17 @@ async function executeStep(
     const msg = String(step.message ?? "").slice(0, 500);
     console.log("[workflow.log]", msg, ctx.payload);
     return { message: msg };
+  }
+  if (step.type === "integration_call") {
+    const { runIntegrationCall } = await import("@/lib/integrations.server");
+    return (await runIntegrationCall(step.accountId, {
+      payload: ctx.payload,
+      to: step.to,
+      subject: step.subject,
+      text: step.text,
+      path: step.path,
+      method: step.method,
+    })) as Record<string, unknown>;
   }
   throw new Error(`Unknown step type: ${(step as { type: string }).type}`);
 }

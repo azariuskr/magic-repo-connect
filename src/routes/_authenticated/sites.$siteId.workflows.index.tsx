@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { getSite } from "@/lib/sites.functions";
+import { listAccounts } from "@/lib/integrations.functions";
 import {
   KNOWN_EVENT_TYPES,
   createWorkflow,
@@ -20,7 +21,17 @@ export const Route = createFileRoute("/_authenticated/sites/$siteId/workflows/")
 
 type Step =
   | { id: string; type: "webhook"; url: string; method?: "POST" | "GET" }
-  | { id: string; type: "log"; message: string };
+  | { id: string; type: "log"; message: string }
+  | {
+      id: string;
+      type: "integration_call";
+      accountId: string;
+      to?: string;
+      subject?: string;
+      text?: string;
+      path?: string;
+      method?: "GET" | "POST" | "PUT" | "DELETE";
+    };
 
 const EVENT_LABELS: Record<KnownEventType, string> = {
   "order.created": "Order placed",
@@ -182,6 +193,7 @@ function WorkflowsIndex() {
           {selectedId ? (
             <WorkflowEditor
               key={selectedId}
+              siteId={siteId}
               workflowId={selectedId}
               onDeleted={() => deleteMut.mutate(selectedId)}
             />
@@ -197,9 +209,11 @@ function WorkflowsIndex() {
 }
 
 function WorkflowEditor({
+  siteId,
   workflowId,
   onDeleted,
 }: {
+  siteId: string;
   workflowId: string;
   onDeleted: () => void;
 }) {
@@ -207,6 +221,7 @@ function WorkflowEditor({
   const getFn = useServerFn(getWorkflow);
   const saveFn = useServerFn(saveWorkflow);
   const runsFn = useServerFn(listWorkflowRuns);
+  const accountsFn = useServerFn(listAccounts);
 
   const q = useQuery({
     queryKey: ["workflow", workflowId],
@@ -217,6 +232,11 @@ function WorkflowEditor({
     queryFn: () => runsFn({ data: { workflowId } }),
     refetchInterval: 5000,
   });
+  const accountsQuery = useQuery({
+    queryKey: ["integrations", siteId],
+    queryFn: () => accountsFn({ data: { siteId } }),
+  });
+  const accounts = accountsQuery.data ?? [];
 
   const [name, setName] = useState("");
   const [status, setStatus] = useState<"draft" | "active" | "paused">("draft");
@@ -260,7 +280,9 @@ function WorkflowEditor({
     const next: Step =
       type === "webhook"
         ? { id: newStepId(), type: "webhook", url: "", method: "POST" }
-        : { id: newStepId(), type: "log", message: "" };
+        : type === "log"
+          ? { id: newStepId(), type: "log", message: "" }
+          : { id: newStepId(), type: "integration_call", accountId: accounts[0]?.id ?? "" };
     setSteps((s) => [...s, next]);
     setDirty(true);
   };
@@ -354,6 +376,14 @@ function WorkflowEditor({
             >
               + Log
             </button>
+            <button
+              onClick={() => addStep("integration_call")}
+              disabled={accounts.length === 0}
+              title={accounts.length === 0 ? "Connect an integration first" : ""}
+              className="rounded-md border px-2.5 py-1 text-xs hover:bg-accent disabled:opacity-40"
+            >
+              + Integration
+            </button>
           </div>
         </div>
         {steps.length === 0 ? (
@@ -392,13 +422,40 @@ function WorkflowEditor({
                       className="rounded-md border border-input bg-background px-3 py-1.5 text-sm font-mono"
                     />
                   </div>
-                ) : (
+                ) : step.type === "log" ? (
                   <input
                     value={step.message}
                     onChange={(e) => updateStep(step.id, { message: e.target.value })}
                     placeholder="Message to log server-side"
                     className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
                   />
+                ) : (
+                  <div className="space-y-2">
+                    <select
+                      value={step.accountId}
+                      onChange={(e) => updateStep(step.id, { accountId: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                    >
+                      <option value="">Select an integration…</option>
+                      {accounts.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name} ({a.providerKey})
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      value={step.to ?? ""}
+                      onChange={(e) => updateStep(step.id, { to: e.target.value })}
+                      placeholder="Recipient (email integrations) — optional, falls back to payload.email"
+                      className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                    />
+                    <input
+                      value={step.subject ?? ""}
+                      onChange={(e) => updateStep(step.id, { subject: e.target.value })}
+                      placeholder="Subject (email integrations) — optional"
+                      className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                    />
+                  </div>
                 )}
               </li>
             ))}

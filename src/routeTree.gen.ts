@@ -27,6 +27,7 @@ import { Route as AuthenticatedSitesSiteIdProductsIndexRouteImport } from './rou
 import { Route as AuthenticatedSitesSiteIdPagesIndexRouteImport } from './routes/_authenticated/sites.$siteId.pages.index'
 import { Route as AuthenticatedSitesSiteIdOrdersIndexRouteImport } from './routes/_authenticated/sites.$siteId.orders.index'
 import { Route as AuthenticatedSitesSiteIdMenusIndexRouteImport } from './routes/_authenticated/sites.$siteId.menus.index'
+import { Route as AuthenticatedSitesSiteIdIntegrationsIndexRouteImport } from './routes/_authenticated/sites.$siteId.integrations.index'
 import { Route as AuthenticatedSitesSiteIdFormsIndexRouteImport } from './routes/_authenticated/sites.$siteId.forms.index'
 import { Route as AuthenticatedSitesSiteIdBlogIndexRouteImport } from './routes/_authenticated/sites.$siteId.blog.index'
 import { Route as AuthenticatedSitesSiteIdProductsProductIdEditRouteImport } from './routes/_authenticated/sites.$siteId.products.$productId.edit'
@@ -131,6 +132,12 @@ const AuthenticatedSitesSiteIdMenusIndexRoute =
     path: '/sites/$siteId/menus/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSitesSiteIdIntegrationsIndexRoute =
+  AuthenticatedSitesSiteIdIntegrationsIndexRouteImport.update({
+    id: '/sites/$siteId/integrations/',
+    path: '/sites/$siteId/integrations/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSitesSiteIdFormsIndexRoute =
   AuthenticatedSitesSiteIdFormsIndexRouteImport.update({
     id: '/sites/$siteId/forms/',
@@ -189,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
   '/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
+  '/sites/$siteId/integrations/': typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
   '/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
   '/sites/$siteId/orders/': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
@@ -215,6 +223,7 @@ export interface FileRoutesByTo {
   '/s/$siteSlug/shop': typeof SSiteSlugShopIndexRoute
   '/sites/$siteId/blog': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms': typeof AuthenticatedSitesSiteIdFormsIndexRoute
+  '/sites/$siteId/integrations': typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
   '/sites/$siteId/menus': typeof AuthenticatedSitesSiteIdMenusIndexRoute
   '/sites/$siteId/orders': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/sites/$siteId/pages': typeof AuthenticatedSitesSiteIdPagesIndexRoute
@@ -243,6 +252,7 @@ export interface FileRoutesById {
   '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
   '/_authenticated/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/_authenticated/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
+  '/_authenticated/sites/$siteId/integrations/': typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
   '/_authenticated/sites/$siteId/menus/': typeof AuthenticatedSitesSiteIdMenusIndexRoute
   '/_authenticated/sites/$siteId/orders/': typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   '/_authenticated/sites/$siteId/pages/': typeof AuthenticatedSitesSiteIdPagesIndexRoute
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/shop/'
     | '/sites/$siteId/blog/'
     | '/sites/$siteId/forms/'
+    | '/sites/$siteId/integrations/'
     | '/sites/$siteId/menus/'
     | '/sites/$siteId/orders/'
     | '/sites/$siteId/pages/'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/shop'
     | '/sites/$siteId/blog'
     | '/sites/$siteId/forms'
+    | '/sites/$siteId/integrations'
     | '/sites/$siteId/menus'
     | '/sites/$siteId/orders'
     | '/sites/$siteId/pages'
@@ -324,6 +336,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/shop/'
     | '/_authenticated/sites/$siteId/blog/'
     | '/_authenticated/sites/$siteId/forms/'
+    | '/_authenticated/sites/$siteId/integrations/'
     | '/_authenticated/sites/$siteId/menus/'
     | '/_authenticated/sites/$siteId/orders/'
     | '/_authenticated/sites/$siteId/pages/'
@@ -478,6 +491,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSitesSiteIdMenusIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sites/$siteId/integrations/': {
+      id: '/_authenticated/sites/$siteId/integrations/'
+      path: '/sites/$siteId/integrations'
+      fullPath: '/sites/$siteId/integrations/'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdIntegrationsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sites/$siteId/forms/': {
       id: '/_authenticated/sites/$siteId/forms/'
       path: '/sites/$siteId/forms'
@@ -535,6 +555,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSitesSiteIdEditRoute: typeof AuthenticatedSitesSiteIdEditRoute
   AuthenticatedSitesSiteIdBlogIndexRoute: typeof AuthenticatedSitesSiteIdBlogIndexRoute
   AuthenticatedSitesSiteIdFormsIndexRoute: typeof AuthenticatedSitesSiteIdFormsIndexRoute
+  AuthenticatedSitesSiteIdIntegrationsIndexRoute: typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
   AuthenticatedSitesSiteIdMenusIndexRoute: typeof AuthenticatedSitesSiteIdMenusIndexRoute
   AuthenticatedSitesSiteIdOrdersIndexRoute: typeof AuthenticatedSitesSiteIdOrdersIndexRoute
   AuthenticatedSitesSiteIdPagesIndexRoute: typeof AuthenticatedSitesSiteIdPagesIndexRoute
@@ -554,6 +575,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedSitesSiteIdBlogIndexRoute,
   AuthenticatedSitesSiteIdFormsIndexRoute:
     AuthenticatedSitesSiteIdFormsIndexRoute,
+  AuthenticatedSitesSiteIdIntegrationsIndexRoute:
+    AuthenticatedSitesSiteIdIntegrationsIndexRoute,
   AuthenticatedSitesSiteIdMenusIndexRoute:
     AuthenticatedSitesSiteIdMenusIndexRoute,
   AuthenticatedSitesSiteIdOrdersIndexRoute:

@@ -591,6 +591,16 @@ CREATE TABLE IF NOT EXISTS "templates" (
   manifest JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- ============================================================
+-- Integration providers (seed)
+-- ============================================================
+INSERT INTO "integration_providers" (key, name, auth_type, system)
+VALUES
+  ('webhook', 'Webhook', 'none', TRUE),
+  ('email_resend', 'Email (Resend)', 'api_key', TRUE),
+  ('http_generic', 'Generic HTTP', 'api_key', TRUE)
+ON CONFLICT (key) DO NOTHING;
 `;
 
 export function ensureSchema(): Promise<void> {
