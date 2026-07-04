@@ -280,7 +280,9 @@ function WorkflowEditor({
     const next: Step =
       type === "webhook"
         ? { id: newStepId(), type: "webhook", url: "", method: "POST" }
-        : { id: newStepId(), type: "log", message: "" };
+        : type === "log"
+          ? { id: newStepId(), type: "log", message: "" }
+          : { id: newStepId(), type: "integration_call", accountId: accounts[0]?.id ?? "" };
     setSteps((s) => [...s, next]);
     setDirty(true);
   };
@@ -373,6 +375,14 @@ function WorkflowEditor({
               className="rounded-md border px-2.5 py-1 text-xs hover:bg-accent"
             >
               + Log
+            </button>
+            <button
+              onClick={() => addStep("integration_call")}
+              disabled={accounts.length === 0}
+              title={accounts.length === 0 ? "Connect an integration first" : ""}
+              className="rounded-md border px-2.5 py-1 text-xs hover:bg-accent disabled:opacity-40"
+            >
+              + Integration
             </button>
           </div>
         </div>
