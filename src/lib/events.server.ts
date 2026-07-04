@@ -151,5 +151,16 @@ async function executeStep(
     console.log("[workflow.log]", msg, ctx.payload);
     return { message: msg };
   }
+  if (step.type === "integration_call") {
+    const { runIntegrationCall } = await import("@/lib/integrations.server");
+    return (await runIntegrationCall(step.accountId, {
+      payload: ctx.payload,
+      to: step.to,
+      subject: step.subject,
+      text: step.text,
+      path: step.path,
+      method: step.method,
+    })) as Record<string, unknown>;
+  }
   throw new Error(`Unknown step type: ${(step as { type: string }).type}`);
 }

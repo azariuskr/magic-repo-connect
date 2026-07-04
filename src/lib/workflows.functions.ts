@@ -61,6 +61,16 @@ const stepSchema = z.discriminatedUnion("type", [
     type: z.literal("log"),
     message: z.string().max(500),
   }),
+  z.object({
+    id: z.string().min(1).max(64),
+    type: z.literal("integration_call"),
+    accountId: z.string().uuid(),
+    to: z.string().max(200).optional(),
+    subject: z.string().max(200).optional(),
+    text: z.string().max(4000).optional(),
+    path: z.string().max(500).optional(),
+    method: z.enum(["GET", "POST", "PUT", "DELETE"]).optional(),
+  }),
 ]);
 
 const graphSchema = z.object({
