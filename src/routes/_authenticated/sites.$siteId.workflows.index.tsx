@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { getSite } from "@/lib/sites.functions";
+import { listAccounts } from "@/lib/integrations.functions";
 import {
   KNOWN_EVENT_TYPES,
   createWorkflow,
@@ -20,7 +21,17 @@ export const Route = createFileRoute("/_authenticated/sites/$siteId/workflows/")
 
 type Step =
   | { id: string; type: "webhook"; url: string; method?: "POST" | "GET" }
-  | { id: string; type: "log"; message: string };
+  | { id: string; type: "log"; message: string }
+  | {
+      id: string;
+      type: "integration_call";
+      accountId: string;
+      to?: string;
+      subject?: string;
+      text?: string;
+      path?: string;
+      method?: "GET" | "POST" | "PUT" | "DELETE";
+    };
 
 const EVENT_LABELS: Record<KnownEventType, string> = {
   "order.created": "Order placed",
