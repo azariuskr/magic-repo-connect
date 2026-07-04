@@ -193,6 +193,7 @@ function WorkflowsIndex() {
           {selectedId ? (
             <WorkflowEditor
               key={selectedId}
+              siteId={siteId}
               workflowId={selectedId}
               onDeleted={() => deleteMut.mutate(selectedId)}
             />
@@ -208,9 +209,11 @@ function WorkflowsIndex() {
 }
 
 function WorkflowEditor({
+  siteId,
   workflowId,
   onDeleted,
 }: {
+  siteId: string;
   workflowId: string;
   onDeleted: () => void;
 }) {
@@ -218,6 +221,7 @@ function WorkflowEditor({
   const getFn = useServerFn(getWorkflow);
   const saveFn = useServerFn(saveWorkflow);
   const runsFn = useServerFn(listWorkflowRuns);
+  const accountsFn = useServerFn(listAccounts);
 
   const q = useQuery({
     queryKey: ["workflow", workflowId],
@@ -228,6 +232,11 @@ function WorkflowEditor({
     queryFn: () => runsFn({ data: { workflowId } }),
     refetchInterval: 5000,
   });
+  const accountsQuery = useQuery({
+    queryKey: ["integrations", siteId],
+    queryFn: () => accountsFn({ data: { siteId } }),
+  });
+  const accounts = accountsQuery.data ?? [];
 
   const [name, setName] = useState("");
   const [status, setStatus] = useState<"draft" | "active" | "paused">("draft");
