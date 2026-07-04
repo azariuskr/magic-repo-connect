@@ -422,13 +422,40 @@ function WorkflowEditor({
                       className="rounded-md border border-input bg-background px-3 py-1.5 text-sm font-mono"
                     />
                   </div>
-                ) : (
+                ) : step.type === "log" ? (
                   <input
                     value={step.message}
                     onChange={(e) => updateStep(step.id, { message: e.target.value })}
                     placeholder="Message to log server-side"
                     className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
                   />
+                ) : (
+                  <div className="space-y-2">
+                    <select
+                      value={step.accountId}
+                      onChange={(e) => updateStep(step.id, { accountId: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                    >
+                      <option value="">Select an integration…</option>
+                      {accounts.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name} ({a.providerKey})
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      value={step.to ?? ""}
+                      onChange={(e) => updateStep(step.id, { to: e.target.value })}
+                      placeholder="Recipient (email integrations) — optional, falls back to payload.email"
+                      className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                    />
+                    <input
+                      value={step.subject ?? ""}
+                      onChange={(e) => updateStep(step.id, { subject: e.target.value })}
+                      placeholder="Subject (email integrations) — optional"
+                      className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+                    />
+                  </div>
                 )}
               </li>
             ))}
