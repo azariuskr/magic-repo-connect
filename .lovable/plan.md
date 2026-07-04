@@ -231,4 +231,6 @@ Validators protect the system before anything is saved.
 ## Current State (as of save)
 
 - **Phase 1** partially complete: TanStack Start app, Better Auth (email/password) with Drizzle adapter, Postgres via `DATABASE_URL`, dashboard, create site, single-page Puck editor with Tiptap, barber-dark theme, public `/s/$slug` render. Schema bootstrapped via `src/db/bootstrap.server.ts` (needs migration to Drizzle Kit for prod).
-- **Next up (MVP target = multi-page small business)**: Phase 2 — `site_pages` + `site_menus`, route resolver at `/s/$siteSlug/$`, page switcher in builder, Header/Footer/NavMenu blocks reading from menus. Then Phase 5-lite blog module.
+- **Phase 2–6 done (lite)**: multi-page sites + menus, blog, forms, commerce (products/orders/customers), event-driven workflows with inline runner.
+- **Phase 7-lite (Integrations)** done: `integration_accounts` with AES-256-GCM encrypted credentials (`src/lib/crypto.server.ts`), providers seeded (webhook, email_resend, http_generic), executor in `src/lib/integrations.server.ts`, admin UI at `/sites/$siteId/integrations`, and a new workflow step type `integration_call` wired through the runner.
+- **Next up**: Phase 8 — AI builder (page/theme/copy generation with patch preview & rollback), then Phase 9 hardening (Drizzle Kit migrations, audit logs, rate limits).
