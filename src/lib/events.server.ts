@@ -15,7 +15,17 @@ export type KnownEventType = (typeof KNOWN_EVENT_TYPES)[number];
 
 export type WorkflowStep =
   | { id: string; type: "webhook"; url: string; method?: "POST" | "GET" }
-  | { id: string; type: "log"; message: string };
+  | { id: string; type: "log"; message: string }
+  | {
+      id: string;
+      type: "integration_call";
+      accountId: string;
+      to?: string;
+      subject?: string;
+      text?: string;
+      path?: string;
+      method?: "GET" | "POST" | "PUT" | "DELETE";
+    };
 
 export type WorkflowGraph = { nodes: WorkflowStep[]; edges?: unknown[] };
 
