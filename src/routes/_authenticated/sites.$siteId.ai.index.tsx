@@ -270,7 +270,7 @@ function GenerationCard({
       </div>
       {showJson ? (
         <pre className="mt-3 max-h-80 overflow-auto rounded-md bg-muted/40 p-3 text-[11px] leading-snug">
-          {JSON.stringify(gen.proposedPatch, null, 2)}
+          {JSON.stringify(patch, null, 2)}
         </pre>
       ) : null}
     </li>
@@ -289,15 +289,16 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${color}`}>{status}</span>;
 }
 
-function summarizePatch(gen: Gen): string {
-  if (gen.targetType === "page") {
-    const content = (gen.proposedPatch as { content?: Array<{ type: string }> }).content ?? [];
+function summarizePatch(targetType: string, patch: Record<string, unknown>): string {
+  if (targetType === "page") {
+    const content = (patch as { content?: Array<{ type: string }> }).content ?? [];
     if (!content.length) return "Empty patch";
     return `${content.length} blocks: ${content.map((b) => b.type).join(" · ")}`;
   }
-  if (gen.targetType === "theme") {
-    const t = (gen.proposedPatch as { tokens?: Record<string, string> }).tokens ?? {};
+  if (targetType === "theme") {
+    const t = (patch as { tokens?: Record<string, string> }).tokens ?? {};
     return `bg ${t.bg} · brand ${t.brand} · fg ${t.fg}`;
   }
   return "";
 }
+
