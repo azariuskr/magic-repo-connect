@@ -674,7 +674,7 @@ export const aiGenerations = pgTable("ai_generations", {
   prompt: text("prompt").notNull(),
   targetType: text("target_type").notNull(),
   targetId: text("target_id"),
-  proposedPatch: jsonb("proposed_patch").notNull().default(sql`'{}'::jsonb`),
+  proposedPatch: jsonb("proposed_patch").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

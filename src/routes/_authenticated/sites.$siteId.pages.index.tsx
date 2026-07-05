@@ -113,6 +113,14 @@ function PagesIndex() {
           >
             Integrations
           </Link>
+          <Link
+            to="/sites/$siteId/ai"
+            params={{ siteId }}
+            className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-primary hover:bg-primary/10"
+          >
+            ✨ AI
+          </Link>
+
           {site ? (
             <a
               href={`/s/${site.slug}`}

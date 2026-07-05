@@ -30,6 +30,7 @@ import { Route as AuthenticatedSitesSiteIdMenusIndexRouteImport } from './routes
 import { Route as AuthenticatedSitesSiteIdIntegrationsIndexRouteImport } from './routes/_authenticated/sites.$siteId.integrations.index'
 import { Route as AuthenticatedSitesSiteIdFormsIndexRouteImport } from './routes/_authenticated/sites.$siteId.forms.index'
 import { Route as AuthenticatedSitesSiteIdBlogIndexRouteImport } from './routes/_authenticated/sites.$siteId.blog.index'
+import { Route as AuthenticatedSitesSiteIdAiIndexRouteImport } from './routes/_authenticated/sites.$siteId.ai.index'
 import { Route as AuthenticatedSitesSiteIdProductsProductIdEditRouteImport } from './routes/_authenticated/sites.$siteId.products.$productId.edit'
 import { Route as AuthenticatedSitesSiteIdPagesPageIdEditRouteImport } from './routes/_authenticated/sites.$siteId.pages.$pageId.edit'
 import { Route as AuthenticatedSitesSiteIdFormsFormIdSubmissionsRouteImport } from './routes/_authenticated/sites.$siteId.forms.$formId.submissions'
@@ -150,6 +151,12 @@ const AuthenticatedSitesSiteIdBlogIndexRoute =
     path: '/sites/$siteId/blog/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSitesSiteIdAiIndexRoute =
+  AuthenticatedSitesSiteIdAiIndexRouteImport.update({
+    id: '/sites/$siteId/ai/',
+    path: '/sites/$siteId/ai/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSitesSiteIdProductsProductIdEditRoute =
   AuthenticatedSitesSiteIdProductsProductIdEditRouteImport.update({
     id: '/sites/$siteId/products/$productId/edit',
@@ -194,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/s/$siteSlug/shop/$slug': typeof SSiteSlugShopSlugRoute
   '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
   '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
+  '/sites/$siteId/ai/': typeof AuthenticatedSitesSiteIdAiIndexRoute
   '/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/integrations/': typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
@@ -221,6 +229,7 @@ export interface FileRoutesByTo {
   '/s/$siteSlug/shop/$slug': typeof SSiteSlugShopSlugRoute
   '/s/$siteSlug/blog': typeof SSiteSlugBlogIndexRoute
   '/s/$siteSlug/shop': typeof SSiteSlugShopIndexRoute
+  '/sites/$siteId/ai': typeof AuthenticatedSitesSiteIdAiIndexRoute
   '/sites/$siteId/blog': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/sites/$siteId/forms': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/sites/$siteId/integrations': typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
@@ -250,6 +259,7 @@ export interface FileRoutesById {
   '/s/$siteSlug/shop/$slug': typeof SSiteSlugShopSlugRoute
   '/s/$siteSlug/blog/': typeof SSiteSlugBlogIndexRoute
   '/s/$siteSlug/shop/': typeof SSiteSlugShopIndexRoute
+  '/_authenticated/sites/$siteId/ai/': typeof AuthenticatedSitesSiteIdAiIndexRoute
   '/_authenticated/sites/$siteId/blog/': typeof AuthenticatedSitesSiteIdBlogIndexRoute
   '/_authenticated/sites/$siteId/forms/': typeof AuthenticatedSitesSiteIdFormsIndexRoute
   '/_authenticated/sites/$siteId/integrations/': typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/shop/$slug'
     | '/s/$siteSlug/blog/'
     | '/s/$siteSlug/shop/'
+    | '/sites/$siteId/ai/'
     | '/sites/$siteId/blog/'
     | '/sites/$siteId/forms/'
     | '/sites/$siteId/integrations/'
@@ -306,6 +317,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/shop/$slug'
     | '/s/$siteSlug/blog'
     | '/s/$siteSlug/shop'
+    | '/sites/$siteId/ai'
     | '/sites/$siteId/blog'
     | '/sites/$siteId/forms'
     | '/sites/$siteId/integrations'
@@ -334,6 +346,7 @@ export interface FileRouteTypes {
     | '/s/$siteSlug/shop/$slug'
     | '/s/$siteSlug/blog/'
     | '/s/$siteSlug/shop/'
+    | '/_authenticated/sites/$siteId/ai/'
     | '/_authenticated/sites/$siteId/blog/'
     | '/_authenticated/sites/$siteId/forms/'
     | '/_authenticated/sites/$siteId/integrations/'
@@ -512,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSitesSiteIdBlogIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sites/$siteId/ai/': {
+      id: '/_authenticated/sites/$siteId/ai/'
+      path: '/sites/$siteId/ai'
+      fullPath: '/sites/$siteId/ai/'
+      preLoaderRoute: typeof AuthenticatedSitesSiteIdAiIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sites/$siteId/products/$productId/edit': {
       id: '/_authenticated/sites/$siteId/products/$productId/edit'
       path: '/sites/$siteId/products/$productId/edit'
@@ -553,6 +573,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedSitesSiteIdEditRoute: typeof AuthenticatedSitesSiteIdEditRoute
+  AuthenticatedSitesSiteIdAiIndexRoute: typeof AuthenticatedSitesSiteIdAiIndexRoute
   AuthenticatedSitesSiteIdBlogIndexRoute: typeof AuthenticatedSitesSiteIdBlogIndexRoute
   AuthenticatedSitesSiteIdFormsIndexRoute: typeof AuthenticatedSitesSiteIdFormsIndexRoute
   AuthenticatedSitesSiteIdIntegrationsIndexRoute: typeof AuthenticatedSitesSiteIdIntegrationsIndexRoute
@@ -571,6 +592,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedSitesSiteIdEditRoute: AuthenticatedSitesSiteIdEditRoute,
+  AuthenticatedSitesSiteIdAiIndexRoute: AuthenticatedSitesSiteIdAiIndexRoute,
   AuthenticatedSitesSiteIdBlogIndexRoute:
     AuthenticatedSitesSiteIdBlogIndexRoute,
   AuthenticatedSitesSiteIdFormsIndexRoute:
