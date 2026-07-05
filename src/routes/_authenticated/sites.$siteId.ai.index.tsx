@@ -184,8 +184,9 @@ type Gen = {
   targetId: string | null;
   status: string;
   createdAt: Date | string;
-  proposedPatch: Record<string, unknown>;
+  proposedPatchJson: string;
 };
+
 
 function GenerationCard({
   gen,
