@@ -204,12 +204,16 @@ function GenerationCard({
   busy: boolean;
 }) {
   const [showJson, setShowJson] = useState(false);
+  const patch = useMemo<Record<string, unknown>>(() => {
+    try { return JSON.parse(gen.proposedPatchJson) as Record<string, unknown>; } catch { return {}; }
+  }, [gen.proposedPatchJson]);
   const pageLabel = useMemo(() => {
     if (gen.targetType !== "page") return null;
     return pages.find((p) => p.id === gen.targetId)?.title ?? "(page)";
   }, [gen, pages]);
 
-  const summary = summarizePatch(gen);
+  const summary = summarizePatch(gen.targetType, patch);
+
 
   return (
     <li className="rounded-lg border bg-card p-4">
