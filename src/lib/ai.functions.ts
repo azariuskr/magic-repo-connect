@@ -148,13 +148,51 @@ function validateThemePatch(raw: unknown): { tokens: Record<string, string> } {
   return parsed as { tokens: Record<string, string> };
 }
 
+// ---------- Serialization ----------
+
+export type SerializedGeneration = {
+  id: string;
+  siteId: string;
+  userId: string;
+  prompt: string;
+  targetType: string;
+  targetId: string | null;
+  status: string;
+  createdAt: string;
+  proposedPatchJson: string;
+};
+
+function serializeGen(row: {
+  id: string;
+  siteId: string;
+  userId: string;
+  prompt: string;
+  targetType: string;
+  targetId: string | null;
+  status: string;
+  createdAt: Date;
+  proposedPatch: unknown;
+}): SerializedGeneration {
+  return {
+    id: row.id,
+    siteId: row.siteId,
+    userId: row.userId,
+    prompt: row.prompt,
+    targetType: row.targetType,
+    targetId: row.targetId,
+    status: row.status,
+    createdAt: row.createdAt.toISOString(),
+    proposedPatchJson: JSON.stringify(row.proposedPatch ?? {}),
+  };
+}
+
 // ---------- Server functions ----------
 
 export const generatePagePatch = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ pageId: z.string().uuid(), prompt: z.string().trim().min(4).max(2000) }).parse(input),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<SerializedGeneration> => {
     const { ensureSchema } = await import("@/db/bootstrap.server");
     const { db } = await import("@/db/client.server");
     const { aiGenerations } = await import("@/db/schema");
@@ -185,14 +223,14 @@ export const generatePagePatch = createServerFn({ method: "POST" })
         status: "pending",
       })
       .returning();
-    return row;
+    return serializeGen(row);
   });
 
 export const generateThemePatch = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ siteId: z.string().uuid(), prompt: z.string().trim().min(4).max(1000) }).parse(input),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<SerializedGeneration> => {
     const { ensureSchema } = await import("@/db/bootstrap.server");
     const { db } = await import("@/db/client.server");
     const { aiGenerations } = await import("@/db/schema");
@@ -220,29 +258,30 @@ export const generateThemePatch = createServerFn({ method: "POST" })
         status: "pending",
       })
       .returning();
-    return row;
+    return serializeGen(row);
   });
 
 export const listGenerations = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ siteId: z.string().uuid() }).parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<SerializedGeneration[]> => {
     const { ensureSchema } = await import("@/db/bootstrap.server");
     const { db } = await import("@/db/client.server");
     const { aiGenerations } = await import("@/db/schema");
     const { eq, desc } = await import("drizzle-orm");
     await ensureSchema();
     await requireOwnedSite(data.siteId);
-    return db
+    const rows = await db
       .select()
       .from(aiGenerations)
       .where(eq(aiGenerations.siteId, data.siteId))
       .orderBy(desc(aiGenerations.createdAt))
       .limit(50);
+    return rows.map(serializeGen);
   });
 
 export const getGeneration = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<SerializedGeneration> => {
     const { ensureSchema } = await import("@/db/bootstrap.server");
     const { db } = await import("@/db/client.server");
     const { aiGenerations } = await import("@/db/schema");
@@ -251,8 +290,9 @@ export const getGeneration = createServerFn({ method: "GET" })
     const [gen] = await db.select().from(aiGenerations).where(eq(aiGenerations.id, data.id)).limit(1);
     if (!gen) throw new Error("Not found");
     await requireOwnedSite(gen.siteId);
-    return gen;
+    return serializeGen(gen);
   });
+
 
 export const rejectGeneration = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
