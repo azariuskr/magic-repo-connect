@@ -344,8 +344,18 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         paymentStatus: orders.paymentStatus,
         updatedAt: orders.updatedAt,
       });
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: order.siteId,
+      userId: user.id,
+      action: "order.status.update",
+      resourceType: "order",
+      resourceId: order.id,
+      metadata: { from: order.status, to: data.status },
+    });
     return row;
   });
+
 
 
 // ---------- Public storefront ----------
@@ -486,6 +496,15 @@ export const placeOrder = createServerFn({ method: "POST" })
     const { sites, products, orders, orderItems, customers } = await import("@/db/schema");
     const { eq, and } = await import("drizzle-orm");
     await ensureSchema();
+
+    // Rate-limit public checkout: 5 orders per 10 min per IP+slug.
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const { getRequestIp } = await import("@/lib/audit.server");
+    const { enforceRateLimit } = await import("@/lib/rate-limit.server");
+    const ip = getRequestIp(getRequest());
+    enforceRateLimit(`order:${ip}:${data.siteSlug}`, 5, 10 * 60 * 1000);
+
+
 
     const [site] = await db
       .select({ id: sites.id })
