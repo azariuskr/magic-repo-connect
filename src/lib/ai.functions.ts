@@ -124,8 +124,11 @@ function validatePagePatch(raw: unknown): { content: Array<{ type: AllowedBlock;
     (ALLOWED_BLOCKS as readonly string[]).includes(b.type),
   );
   if (filtered.length === 0) throw new Error("AI patch contained no supported blocks");
-  return { content: filtered, root: parsed.root };
+  // Sanitize every "*Html" prop against the allow-list before persisting.
+  const { sanitizeHtmlPropsDeep } = require("@/lib/sanitize.server") as typeof import("@/lib/sanitize.server");
+  return sanitizeHtmlPropsDeep({ content: filtered, root: parsed.root });
 }
+
 
 function validateThemePatch(raw: unknown): { tokens: Record<string, string> } {
   const parsed = z
