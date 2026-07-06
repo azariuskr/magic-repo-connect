@@ -171,10 +171,12 @@ export const saveProduct = createServerFn({ method: "POST" })
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
     await requireOwnedProduct(data.id);
+    const { sanitizeHtml } = await import("@/lib/sanitize.server");
     const update: Record<string, unknown> = { updatedAt: new Date() };
     if (data.name !== undefined) update.name = data.name;
     if (data.slug !== undefined) update.slug = data.slug;
-    if (data.descriptionHtml !== undefined) update.descriptionHtml = data.descriptionHtml;
+    if (data.descriptionHtml !== undefined)
+      update.descriptionHtml = data.descriptionHtml == null ? null : sanitizeHtml(data.descriptionHtml);
     if (data.priceCents !== undefined) update.priceCents = data.priceCents;
     if (data.currency !== undefined) update.currency = data.currency.toUpperCase();
     if (data.images !== undefined) update.images = data.images;
@@ -186,6 +188,7 @@ export const saveProduct = createServerFn({ method: "POST" })
       .returning();
     return normalizeProduct(row);
   });
+
 
 export const publishProduct = createServerFn({ method: "POST" })
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))

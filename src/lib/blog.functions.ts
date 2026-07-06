@@ -154,17 +154,19 @@ export const saveBlogPost = createServerFn({ method: "POST" })
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
     await requireOwnedPost(data.id);
+    const { sanitizeHtml } = await import("@/lib/sanitize.server");
     const update: Record<string, unknown> = { updatedAt: new Date() };
     if (data.title !== undefined) update.title = data.title;
     if (data.slug !== undefined) update.slug = data.slug;
     if (data.excerpt !== undefined) update.excerpt = data.excerpt;
-    if (data.contentHtml !== undefined) update.contentHtml = data.contentHtml;
+    if (data.contentHtml !== undefined) update.contentHtml = sanitizeHtml(data.contentHtml);
     if (data.coverImageKey !== undefined) update.coverImageKey = data.coverImageKey;
     if (data.seoTitle !== undefined) update.seoTitle = data.seoTitle;
     if (data.seoDescription !== undefined) update.seoDescription = data.seoDescription;
     const [row] = await db.update(blogPosts).set(update).where(eq(blogPosts.id, data.id)).returning();
     return stripPost(row);
   });
+
 
 export const publishBlogPost = createServerFn({ method: "POST" })
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
@@ -174,13 +176,14 @@ export const publishBlogPost = createServerFn({ method: "POST" })
     const { blogPosts } = await import("@/db/schema");
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
-    await requireOwnedPost(data.id);
+    const { user } = await requireOwnedPost(data.id);
     const [row] = await db
       .update(blogPosts)
       .set({ status: "published", publishedAt: new Date(), updatedAt: new Date() })
       .where(eq(blogPosts.id, data.id))
       .returning();
     const { emitEvent } = await import("@/lib/events.server");
+    const { logAudit } = await import("@/lib/audit.server");
     await emitEvent(
       row.siteId,
       "blog.post.published",
@@ -193,6 +196,14 @@ export const publishBlogPost = createServerFn({ method: "POST" })
       "blog",
       row.id,
     );
+    await logAudit({
+      siteId: row.siteId,
+      userId: user.id,
+      action: "blog.post.publish",
+      resourceType: "blog_post",
+      resourceId: row.id,
+      metadata: { title: row.title, slug: row.slug },
+    });
     return stripPost(row);
   });
 
@@ -204,12 +215,21 @@ export const unpublishBlogPost = createServerFn({ method: "POST" })
     const { blogPosts } = await import("@/db/schema");
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
-    await requireOwnedPost(data.id);
+    const { user } = await requireOwnedPost(data.id);
     const [row] = await db
       .update(blogPosts)
       .set({ status: "draft", updatedAt: new Date() })
       .where(eq(blogPosts.id, data.id))
       .returning();
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: row.siteId,
+      userId: user.id,
+      action: "blog.post.unpublish",
+      resourceType: "blog_post",
+      resourceId: row.id,
+      metadata: { title: row.title, slug: row.slug },
+    });
     return stripPost(row);
   });
 
@@ -221,10 +241,20 @@ export const deleteBlogPost = createServerFn({ method: "POST" })
     const { blogPosts } = await import("@/db/schema");
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
-    await requireOwnedPost(data.id);
+    const { user, post } = await requireOwnedPost(data.id);
     await db.delete(blogPosts).where(eq(blogPosts.id, data.id));
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: post.siteId,
+      userId: user.id,
+      action: "blog.post.delete",
+      resourceType: "blog_post",
+      resourceId: post.id,
+      metadata: { title: post.title, slug: post.slug },
+    });
     return { ok: true };
   });
+
 
 // ---------- Public ----------
 
