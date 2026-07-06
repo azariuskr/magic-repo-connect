@@ -211,7 +211,9 @@ export const generatePagePatch = createServerFn({ method: "POST" })
 
     const raw = await callGateway(system, userPrompt);
     const parsed = parseJsonLoose(raw);
-    const patch = validatePagePatch(parsed);
+    const { sanitizeHtmlPropsDeep } = await import("@/lib/sanitize.server");
+    const patch = sanitizeHtmlPropsDeep(validatePagePatch(parsed));
+
 
     const [row] = await db
       .insert(aiGenerations)
