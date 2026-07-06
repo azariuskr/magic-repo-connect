@@ -127,6 +127,8 @@ function validatePagePatch(raw: unknown): { content: Array<{ type: AllowedBlock;
   return { content: filtered, root: parsed.root };
 }
 
+
+
 function validateThemePatch(raw: unknown): { tokens: Record<string, string> } {
   const parsed = z
     .object({
@@ -209,7 +211,9 @@ export const generatePagePatch = createServerFn({ method: "POST" })
 
     const raw = await callGateway(system, userPrompt);
     const parsed = parseJsonLoose(raw);
-    const patch = validatePagePatch(parsed);
+    const { sanitizeHtmlPropsDeep } = await import("@/lib/sanitize.server");
+    const patch = sanitizeHtmlPropsDeep(validatePagePatch(parsed));
+
 
     const [row] = await db
       .insert(aiGenerations)
@@ -359,7 +363,17 @@ export const applyGeneration = createServerFn({ method: "POST" })
         afterSnapshot: updated.puckData as never,
       });
       await db.update(aiGenerations).set({ status: "applied" }).where(eq(aiGenerations.id, gen.id));
+      const { logAudit } = await import("@/lib/audit.server");
+      await logAudit({
+        siteId: site.id,
+        userId: user.id,
+        action: "ai.apply",
+        resourceType: "page",
+        resourceId: page.id,
+        metadata: { generationId: gen.id, prompt: gen.prompt.slice(0, 200) },
+      });
       return { ok: true, targetType: "page" as const, pageId: page.id };
+
     }
 
     if (gen.targetType === "theme") {
@@ -378,7 +392,17 @@ export const applyGeneration = createServerFn({ method: "POST" })
         afterSnapshot: updated.theme as never,
       });
       await db.update(aiGenerations).set({ status: "applied" }).where(eq(aiGenerations.id, gen.id));
+      const { logAudit } = await import("@/lib/audit.server");
+      await logAudit({
+        siteId: site.id,
+        userId: user.id,
+        action: "ai.apply",
+        resourceType: "theme",
+        resourceId: site.id,
+        metadata: { generationId: gen.id, prompt: gen.prompt.slice(0, 200) },
+      });
       return { ok: true, targetType: "theme" as const, siteId: site.id };
+
     }
 
     throw new Error(`Unsupported target type: ${gen.targetType}`);
@@ -395,7 +419,8 @@ export const rollbackApplication = createServerFn({ method: "POST" })
 
     const [gen] = await db.select().from(aiGenerations).where(eq(aiGenerations.id, data.generationId)).limit(1);
     if (!gen) throw new Error("Not found");
-    await requireOwnedSite(gen.siteId);
+    const { user } = await requireOwnedSite(gen.siteId);
+
 
     const [app] = await db
       .select()
@@ -414,5 +439,15 @@ export const rollbackApplication = createServerFn({ method: "POST" })
       await db.update(sites).set({ theme: app.beforeSnapshot as never, updatedAt: new Date() }).where(eq(sites.id, gen.siteId));
     }
     await db.update(aiGenerations).set({ status: "rolled_back" }).where(eq(aiGenerations.id, gen.id));
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: gen.siteId,
+      userId: user.id,
+      action: "ai.rollback",
+      resourceType: gen.targetType,
+      resourceId: gen.targetId,
+      metadata: { generationId: gen.id },
+    });
     return { ok: true };
+
   });

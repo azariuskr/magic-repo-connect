@@ -312,8 +312,17 @@ export const submitForm = createServerFn({ method: "POST" })
     const { forms, formSubmissions } = await import("@/db/schema");
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
+
+    // Rate-limit public form submissions: 10 per 10 min per IP+form.
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const { getRequestIp } = await import("@/lib/audit.server");
+    const { enforceRateLimit } = await import("@/lib/rate-limit.server");
+    const ip = getRequestIp(getRequest());
+    enforceRateLimit(`form:${ip}:${data.formId}`, 10, 10 * 60 * 1000);
+
     const [form] = await db.select().from(forms).where(eq(forms.id, data.formId)).limit(1);
     if (!form) throw new Error("Form not found");
+
     const allowed = new Set((form.schema?.fields ?? []).map((f) => f.key));
     const clean: Record<string, string> = {};
     for (const [k, v] of Object.entries(data.data)) {
