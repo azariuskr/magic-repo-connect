@@ -363,7 +363,17 @@ export const applyGeneration = createServerFn({ method: "POST" })
         afterSnapshot: updated.puckData as never,
       });
       await db.update(aiGenerations).set({ status: "applied" }).where(eq(aiGenerations.id, gen.id));
+      const { logAudit } = await import("@/lib/audit.server");
+      await logAudit({
+        siteId: site.id,
+        userId: user.id,
+        action: "ai.apply",
+        resourceType: "page",
+        resourceId: page.id,
+        metadata: { generationId: gen.id, prompt: gen.prompt.slice(0, 200) },
+      });
       return { ok: true, targetType: "page" as const, pageId: page.id };
+
     }
 
     if (gen.targetType === "theme") {
@@ -382,7 +392,17 @@ export const applyGeneration = createServerFn({ method: "POST" })
         afterSnapshot: updated.theme as never,
       });
       await db.update(aiGenerations).set({ status: "applied" }).where(eq(aiGenerations.id, gen.id));
+      const { logAudit } = await import("@/lib/audit.server");
+      await logAudit({
+        siteId: site.id,
+        userId: user.id,
+        action: "ai.apply",
+        resourceType: "theme",
+        resourceId: site.id,
+        metadata: { generationId: gen.id, prompt: gen.prompt.slice(0, 200) },
+      });
       return { ok: true, targetType: "theme" as const, siteId: site.id };
+
     }
 
     throw new Error(`Unsupported target type: ${gen.targetType}`);
