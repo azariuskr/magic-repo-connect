@@ -120,6 +120,14 @@ function PagesIndex() {
           >
             ✨ AI
           </Link>
+          <Link
+            to="/sites/$siteId/audit"
+            params={{ siteId }}
+            className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
+          >
+            Audit
+          </Link>
+
 
           {site ? (
             <a
