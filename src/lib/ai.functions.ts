@@ -419,7 +419,8 @@ export const rollbackApplication = createServerFn({ method: "POST" })
 
     const [gen] = await db.select().from(aiGenerations).where(eq(aiGenerations.id, data.generationId)).limit(1);
     if (!gen) throw new Error("Not found");
-    await requireOwnedSite(gen.siteId);
+    const { user } = await requireOwnedSite(gen.siteId);
+
 
     const [app] = await db
       .select()
@@ -438,5 +439,15 @@ export const rollbackApplication = createServerFn({ method: "POST" })
       await db.update(sites).set({ theme: app.beforeSnapshot as never, updatedAt: new Date() }).where(eq(sites.id, gen.siteId));
     }
     await db.update(aiGenerations).set({ status: "rolled_back" }).where(eq(aiGenerations.id, gen.id));
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: gen.siteId,
+      userId: user.id,
+      action: "ai.rollback",
+      resourceType: gen.targetType,
+      resourceId: gen.targetId,
+      metadata: { generationId: gen.id },
+    });
     return { ok: true };
+
   });
