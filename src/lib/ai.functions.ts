@@ -200,6 +200,9 @@ export const generatePagePatch = createServerFn({ method: "POST" })
     const { aiGenerations } = await import("@/db/schema");
     await ensureSchema();
     const { user, site, page } = await requireOwnedPage(data.pageId);
+    const { enforceRateLimit } = await import("@/lib/rate-limit.server");
+    // AI calls are expensive: 10 generations per user per 5 minutes.
+    enforceRateLimit(`ai:${user.id}`, 10, 5 * 60_000);
 
     const system =
       `You are a website page generator. Return ONLY a JSON object that matches this shape (no prose, no markdown):\n${PAGE_SCHEMA_HINT}\n` +
