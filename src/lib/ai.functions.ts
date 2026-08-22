@@ -243,6 +243,9 @@ export const generateThemePatch = createServerFn({ method: "POST" })
     const { aiGenerations } = await import("@/db/schema");
     await ensureSchema();
     const { user, site } = await requireOwnedSite(data.siteId);
+    const { enforceRateLimit } = await import("@/lib/rate-limit.server");
+    enforceRateLimit(`ai:${user.id}`, 10, 5 * 60_000);
+
 
     const system =
       `You design website color themes. Return ONLY JSON matching:\n${THEME_SCHEMA_HINT}\n` +
