@@ -224,6 +224,15 @@ export const publishPage = createServerFn({ method: "POST" })
       puckData: row.puckData as never,
       createdBy: user.id,
     });
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: row.siteId,
+      userId: user.id,
+      action: "page.publish",
+      resourceType: "site_page",
+      resourceId: row.id,
+      metadata: { path: row.path, title: row.title, version: next ?? 1 },
+    });
     return row;
   });
 
