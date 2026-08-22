@@ -3,6 +3,8 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { listBlockPosts, listBlockProducts } from "@/lib/content-blocks.functions";
 
 // ---------- Shared RichText ----------
 
@@ -502,6 +504,150 @@ function Footer({ businessName, tagline, address, phone, email, hours, socialHtm
   );
 }
 
+
+// ---------- Data-bound blocks ----------
+
+type LatestPostsProps = { title?: string; subtitle?: string; limit?: string; ctaLabel?: string };
+
+function LatestPosts({ title, subtitle, limit, ctaLabel, siteSlug }: LatestPostsProps & { siteSlug?: string }) {
+  const count = Math.min(12, Math.max(1, Number(limit) || 3));
+  const query = useQuery({
+    queryKey: ["block-posts", siteSlug, count],
+    queryFn: () => listBlockPosts({ data: { siteSlug: siteSlug!, limit: count } }),
+    enabled: !!siteSlug,
+  });
+  const posts = query.data ?? [];
+  return (
+    <SectionShell bg="surface">
+      {title ? (
+        <h2 className="text-center text-3xl font-semibold tracking-tight" style={{ color: "var(--site-fg)" }}>
+          {title}
+        </h2>
+      ) : null}
+      {subtitle ? (
+        <p className="mx-auto mt-3 max-w-xl text-center text-sm" style={{ color: "var(--site-muted)" }}>
+          {subtitle}
+        </p>
+      ) : null}
+      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {(posts.length > 0 ? posts : PLACEHOLDER_POSTS.slice(0, count)).map((post) => (
+          <a
+            key={post.id}
+            href={siteSlug && posts.length > 0 ? `/s/${siteSlug}/blog/${post.slug}` : undefined}
+            className="block p-6 transition-transform hover:-translate-y-0.5"
+            style={{
+              backgroundColor: "var(--site-bg)",
+              borderRadius: "var(--site-radius)",
+              border: "1px solid color-mix(in srgb, var(--site-fg) 10%, transparent)",
+            }}
+          >
+            {post.publishedAt ? (
+              <p className="text-xs uppercase tracking-widest" style={{ color: "var(--site-brand)" }}>
+                {new Date(post.publishedAt).toLocaleDateString()}
+              </p>
+            ) : null}
+            <h3 className="mt-2 text-lg font-semibold" style={{ color: "var(--site-fg)" }}>
+              {post.title}
+            </h3>
+            {post.excerpt ? (
+              <p className="mt-2 text-sm" style={{ color: "var(--site-muted)" }}>
+                {post.excerpt}
+              </p>
+            ) : null}
+          </a>
+        ))}
+      </div>
+      {ctaLabel && siteSlug ? (
+        <div className="mt-8 flex justify-center">
+          <Btn href={`/s/${siteSlug}/blog`}>{ctaLabel}</Btn>
+        </div>
+      ) : null}
+    </SectionShell>
+  );
+}
+
+const PLACEHOLDER_POSTS = [
+  { id: "p1", title: "Your latest post", slug: "#", excerpt: "Published blog posts appear here automatically.", publishedAt: null as string | null },
+  { id: "p2", title: "Second post", slug: "#", excerpt: "Write posts in the Blog module.", publishedAt: null as string | null },
+  { id: "p3", title: "Third post", slug: "#", excerpt: "Only published posts are shown.", publishedAt: null as string | null },
+];
+
+type ProductGridProps = { title?: string; subtitle?: string; limit?: string; ctaLabel?: string };
+
+function ProductGrid({ title, subtitle, limit, ctaLabel, siteSlug }: ProductGridProps & { siteSlug?: string }) {
+  const count = Math.min(12, Math.max(1, Number(limit) || 3));
+  const query = useQuery({
+    queryKey: ["block-products", siteSlug, count],
+    queryFn: () => listBlockProducts({ data: { siteSlug: siteSlug!, limit: count } }),
+    enabled: !!siteSlug,
+  });
+  const items = query.data ?? [];
+  const shown = items.length > 0 ? items : PLACEHOLDER_PRODUCTS.slice(0, count);
+  return (
+    <SectionShell bg="bg">
+      {title ? (
+        <h2 className="text-center text-3xl font-semibold tracking-tight" style={{ color: "var(--site-fg)" }}>
+          {title}
+        </h2>
+      ) : null}
+      {subtitle ? (
+        <p className="mx-auto mt-3 max-w-xl text-center text-sm" style={{ color: "var(--site-muted)" }}>
+          {subtitle}
+        </p>
+      ) : null}
+      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {shown.map((product) => (
+          <a
+            key={product.id}
+            href={siteSlug && items.length > 0 ? `/s/${siteSlug}/shop/${product.slug}` : undefined}
+            className="block overflow-hidden transition-transform hover:-translate-y-0.5"
+            style={{
+              backgroundColor: "var(--site-surface)",
+              borderRadius: "var(--site-radius)",
+              border: "1px solid color-mix(in srgb, var(--site-fg) 10%, transparent)",
+            }}
+          >
+            <div
+              className="aspect-[4/3] w-full bg-cover bg-center"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--site-fg) 8%, transparent)",
+                backgroundImage: product.imageUrl ? `url(${product.imageUrl})` : undefined,
+              }}
+            />
+            <div className="p-5">
+              <h3 className="text-base font-semibold" style={{ color: "var(--site-fg)" }}>
+                {product.name}
+              </h3>
+              <p className="mt-1 text-sm font-medium" style={{ color: "var(--site-brand)" }}>
+                {formatPrice(product.priceCents, product.currency)}
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
+      {ctaLabel && siteSlug ? (
+        <div className="mt-8 flex justify-center">
+          <Btn href={`/s/${siteSlug}/shop`}>{ctaLabel}</Btn>
+        </div>
+      ) : null}
+    </SectionShell>
+  );
+}
+
+const PLACEHOLDER_PRODUCTS = [
+  { id: "x1", name: "Your product", slug: "#", priceCents: 2500, currency: "EUR", imageUrl: null as string | null },
+  { id: "x2", name: "Another product", slug: "#", priceCents: 4900, currency: "EUR", imageUrl: null as string | null },
+  { id: "x3", name: "Third product", slug: "#", priceCents: 9900, currency: "EUR", imageUrl: null as string | null },
+];
+
+function formatPrice(cents: number, currency: string) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format((cents ?? 0) / 100);
+  } catch {
+    return `${((cents ?? 0) / 100).toFixed(2)} ${currency}`;
+  }
+}
+
 // ---------- Puck config ----------
 
 type PuckProps = {
@@ -512,6 +658,8 @@ type PuckProps = {
   BookingCTA: BookingCTAProps;
   Map: MapBlockProps;
   Footer: FooterProps;
+  LatestPosts: LatestPostsProps;
+  ProductGrid: ProductGridProps;
 };
 
 const richTextField = {
@@ -522,7 +670,7 @@ const richTextField = {
   ),
 };
 
-export function buildPuckConfig(siteId?: string): Config<PuckProps> {
+export function buildPuckConfig(siteId?: string, siteSlug?: string): Config<PuckProps> {
   return {
     components: {
       Hero: {
@@ -671,6 +819,38 @@ export function buildPuckConfig(siteId?: string): Config<PuckProps> {
           socialHtml: "<p><a href=\"#\">Instagram</a> · <a href=\"#\">Facebook</a></p>",
         },
         render: Footer,
+      },
+      LatestPosts: {
+        label: "Latest blog posts",
+        fields: {
+          title: { type: "text", label: "Section title" },
+          subtitle: { type: "textarea", label: "Subtitle" },
+          limit: { type: "text", label: "How many posts (1–12)" },
+          ctaLabel: { type: "text", label: "Link to blog (button label)" },
+        },
+        defaultProps: {
+          title: "From the blog",
+          subtitle: "News, tips and updates.",
+          limit: "3",
+          ctaLabel: "Read the blog",
+        },
+        render: (props) => <LatestPosts {...props} siteSlug={siteSlug} />,
+      },
+      ProductGrid: {
+        label: "Product grid",
+        fields: {
+          title: { type: "text", label: "Section title" },
+          subtitle: { type: "textarea", label: "Subtitle" },
+          limit: { type: "text", label: "How many products (1–12)" },
+          ctaLabel: { type: "text", label: "Link to shop (button label)" },
+        },
+        defaultProps: {
+          title: "Shop",
+          subtitle: "Hand-picked products from our store.",
+          limit: "3",
+          ctaLabel: "View all products",
+        },
+        render: (props) => <ProductGrid {...props} siteSlug={siteSlug} />,
       },
     },
   };

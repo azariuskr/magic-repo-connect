@@ -35,7 +35,7 @@ export function PublishedSite({
   footerMenu,
   pageData,
 }: PublishedSiteProps) {
-  const config = buildPuckConfig();
+  const config = buildPuckConfig(undefined, siteSlug);
 
   // Prefer the user-defined "primary" menu; fall back to auto-generated nav.
   const headerItems =
