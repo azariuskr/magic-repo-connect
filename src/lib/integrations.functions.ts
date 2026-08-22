@@ -159,6 +159,14 @@ export const createAccount = createServerFn({ method: "POST" })
         encryptedCredentials: encrypted,
       })
       .returning({ id: integrationAccounts.id });
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: data.siteId,
+      action: "integration.create",
+      resourceType: "integration_account",
+      resourceId: row.id,
+      metadata: { provider: data.providerKey, name: data.name, hasCredentials: !!encrypted },
+    });
     return { id: row.id };
   });
 
@@ -181,7 +189,7 @@ export const updateAccount = createServerFn({ method: "POST" })
     const { eq } = await import("drizzle-orm");
     const { encryptJson } = await import("@/lib/crypto.server");
     await ensureSchema();
-    await requireOwnedAccount(data.id);
+    const { account, site } = await requireOwnedAccount(data.id);
     const update: Record<string, unknown> = { updatedAt: new Date() };
     if (data.name !== undefined) update.name = data.name;
     if (data.settings !== undefined) update.settings = data.settings;
@@ -190,6 +198,18 @@ export const updateAccount = createServerFn({ method: "POST" })
       update.encryptedCredentials = encryptJson(data.credentials);
     }
     await db.update(integrationAccounts).set(update).where(eq(integrationAccounts.id, data.id));
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: site.id,
+      action: "integration.update",
+      resourceType: "integration_account",
+      resourceId: data.id,
+      metadata: {
+        provider: account.providerKey,
+        credentialsRotated: !!(data.credentials && Object.keys(data.credentials).length > 0),
+        status: data.status ?? account.status,
+      },
+    });
     return { ok: true };
   });
 
@@ -201,8 +221,16 @@ export const deleteAccount = createServerFn({ method: "POST" })
     const { integrationAccounts } = await import("@/db/schema");
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
-    await requireOwnedAccount(data.id);
+    const { account, site } = await requireOwnedAccount(data.id);
     await db.delete(integrationAccounts).where(eq(integrationAccounts.id, data.id));
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: site.id,
+      action: "integration.delete",
+      resourceType: "integration_account",
+      resourceId: data.id,
+      metadata: { provider: account.providerKey, name: account.name },
+    });
     return { ok: true };
   });
 

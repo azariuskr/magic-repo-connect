@@ -224,6 +224,15 @@ export const publishPage = createServerFn({ method: "POST" })
       puckData: row.puckData as never,
       createdBy: user.id,
     });
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: row.siteId,
+      userId: user.id,
+      action: "page.publish",
+      resourceType: "site_page",
+      resourceId: row.id,
+      metadata: { path: row.path, title: row.title, version: next ?? 1 },
+    });
     return row;
   });
 
@@ -295,6 +304,15 @@ export const revertPageVersion = createServerFn({ method: "POST" })
       puckData: row.puckData as never,
       createdBy: user.id,
     });
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: page.siteId,
+      userId: user.id,
+      action: "page.revert",
+      resourceType: "site_page",
+      resourceId: data.pageId,
+      metadata: { toVersion: version.versionNumber, path: row.path },
+    });
     return row;
   });
 
@@ -306,9 +324,18 @@ export const deletePage = createServerFn({ method: "POST" })
     const { sitePages } = await import("@/db/schema");
     const { eq } = await import("drizzle-orm");
     await ensureSchema();
-    const { page } = await requireOwnedPage(data.id);
+    const { page, user } = await requireOwnedPage(data.id);
     if (page.isHome) throw new Error("Cannot delete the home page");
     await db.delete(sitePages).where(eq(sitePages.id, data.id));
+    const { logAudit } = await import("@/lib/audit.server");
+    await logAudit({
+      siteId: page.siteId,
+      userId: user.id,
+      action: "page.delete",
+      resourceType: "site_page",
+      resourceId: data.id,
+      metadata: { path: page.path, title: page.title },
+    });
     return { ok: true };
   });
 
