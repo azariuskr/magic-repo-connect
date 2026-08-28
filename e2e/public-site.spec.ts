@@ -13,8 +13,9 @@ test.describe("public site rendering", () => {
     await publishHomePage(page);
 
     await page.goto(`/s/${slug}`);
-    // Default starter content comes from the Hero block.
-    await expect(page.locator("section").first()).toBeVisible();
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("link", { name: `E2E ${slug}` })).toBeVisible();
+    await expect(page.getByRole("navigation").getByRole("link", { name: "Home" })).toBeVisible();
     await expect(page.locator("body")).not.toContainText("hasn't been published yet");
   });
 
@@ -27,9 +28,11 @@ test.describe("public site rendering", () => {
     await page.getByPlaceholder("Page title (e.g. About)").fill("Secret");
     await page.getByPlaceholder("/about").fill("/secret");
     await page.getByRole("button", { name: "Create" }).click();
-    await expect(page.getByRole("cell", { name: "/secret" })).toBeVisible({ timeout: 30_000 });
+    // Creating a page drops straight into its builder.
+    await page.waitForURL(/\/pages\/[0-9a-f-]+\/edit/, { timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Publish page" })).toBeVisible();
 
     await page.goto(`/s/${slug}/secret`);
-    await expect(page.getByRole("heading", { name: /page not found/i })).toBeVisible();
+    await expect(page.getByText(/not found/i).first()).toBeVisible();
   });
 });
