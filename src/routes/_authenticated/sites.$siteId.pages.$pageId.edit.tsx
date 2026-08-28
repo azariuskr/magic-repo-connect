@@ -81,7 +81,8 @@ function EditPage() {
     },
   });
 
-  const config = useMemo(() => buildPuckConfig(siteId), [siteId]);
+  const siteSlug = siteQuery.data?.slug as string | undefined;
+  const config = useMemo(() => buildPuckConfig(siteId, siteSlug), [siteId, siteSlug]);
   const [theme, setTheme] = useState<SiteTheme>(DEFAULT_THEME);
   const [showTheme, setShowTheme] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
